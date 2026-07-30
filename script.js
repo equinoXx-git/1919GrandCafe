@@ -54,7 +54,7 @@ function initMobileMenu() {
   });
 }
 
-/* Audio Ambient Toggle (Rich Web Audio Heritage Lounge Ambiance) */
+/* Audio Ambient Toggle (Supports Real Audio Files + Web Audio Fallback) */
 let audioCtx = null;
 let isAudioPlaying = false;
 let ambientSoundInstance = null;
@@ -70,41 +70,53 @@ function initAudioToggle() {
         audioBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
         audioBtn.style.background = 'var(--color-gold)';
         audioBtn.style.color = '#fff';
-        showToast('Ambient Cafe Sound On ☕ (Warm Heritage Lounge)');
       }
     } else {
       stopAmbientAudio();
       audioBtn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
       audioBtn.style.background = 'transparent';
       audioBtn.style.color = 'var(--color-gold-dark)';
-      showToast('Ambient Sound Muted');
+      showToast('Ambient Music Muted');
     }
   });
 }
 
 async function startAmbientAudio() {
+  const bgMusic = document.getElementById('bgMusic');
+
+  // 1. Try playing Real Audio file (MP3 / WAV) if available
+  if (bgMusic) {
+    try {
+      bgMusic.volume = 0.5;
+      await bgMusic.play();
+      isAudioPlaying = true;
+      showToast('Playing Heritage Cafe Music 🎵');
+      return true;
+    } catch (e) {
+      console.log('Real audio file not found or failed, using lounge synthesizer fallback...', e);
+    }
+  }
+
+  // 2. Fallback to Web Audio Synthesizer
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     if (!audioCtx) {
       audioCtx = new AudioContext();
     }
     
-    // Unlock Web Audio API policy on browser gesture
     if (audioCtx.state === 'suspended') {
       await audioCtx.resume();
     }
 
-    // Stop existing if any
     if (ambientSoundInstance) {
       ambientSoundInstance.stop();
     }
 
-    // Master Gain (audible and soothing)
     const masterGain = audioCtx.createGain();
     masterGain.gain.setValueAtTime(0.18, audioCtx.currentTime);
 
-    // 1. Warm Jazz Lounge Ambient Harmony (Cmaj7 / Am9 low warm acoustic tones)
-    const frequencies = [130.81, 164.81, 196.00, 246.94, 329.63]; // C3, E3, G3, B3, E4
+    // Warm Jazz Lounge Ambient Harmony
+    const frequencies = [130.81, 164.81, 196.00, 246.94, 329.63];
     const oscNodes = frequencies.map((freq, idx) => {
       const osc = audioCtx.createOscillator();
       const g = audioCtx.createGain();
@@ -117,7 +129,7 @@ async function startAmbientAudio() {
       return osc;
     });
 
-    // 2. Vintage Vinyl & Cafe Acoustics (Soft Brown Noise Generation)
+    // Vintage Noise
     const bufferSize = audioCtx.sampleRate * 2;
     const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
     const output = noiseBuffer.getChannelData(0);
@@ -156,6 +168,7 @@ async function startAmbientAudio() {
     };
 
     isAudioPlaying = true;
+    showToast('Ambient Cafe Sound On ☕');
     return true;
   } catch (e) {
     console.error('Audio play error:', e);
@@ -165,6 +178,11 @@ async function startAmbientAudio() {
 }
 
 function stopAmbientAudio() {
+  const bgMusic = document.getElementById('bgMusic');
+  if (bgMusic && !bgMusic.paused) {
+    bgMusic.pause();
+  }
+
   if (ambientSoundInstance) {
     ambientSoundInstance.stop();
     ambientSoundInstance = null;
