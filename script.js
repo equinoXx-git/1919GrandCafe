@@ -54,22 +54,24 @@ function initMobileMenu() {
   });
 }
 
-/* Audio Ambient Toggle (Synthetic Ambient Sound / Visual State) */
+/* Audio Ambient Toggle (Rich Web Audio Heritage Lounge Ambiance) */
 let audioCtx = null;
 let isAudioPlaying = false;
-let ambientOsc = null;
+let ambientSoundInstance = null;
 
 function initAudioToggle() {
   const audioBtn = document.getElementById('audioToggleBtn');
   if (!audioBtn) return;
 
-  audioBtn.addEventListener('click', () => {
+  audioBtn.addEventListener('click', async () => {
     if (!isAudioPlaying) {
-      startAmbientAudio();
-      audioBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
-      audioBtn.style.background = 'var(--color-gold)';
-      audioBtn.style.color = '#fff';
-      showToast('Ambient Cafe Sound On ☕');
+      const success = await startAmbientAudio();
+      if (success) {
+        audioBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+        audioBtn.style.background = 'var(--color-gold)';
+        audioBtn.style.color = '#fff';
+        showToast('Ambient Cafe Sound On ☕ (Warm Heritage Lounge)');
+      }
     } else {
       stopAmbientAudio();
       audioBtn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
@@ -80,36 +82,92 @@ function initAudioToggle() {
   });
 }
 
-function startAmbientAudio() {
+async function startAmbientAudio() {
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
-    audioCtx = new AudioContext();
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
+    if (!audioCtx) {
+      audioCtx = new AudioContext();
+    }
     
-    // Soothing low ambient hum
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(110, audioCtx.currentTime); // Low warm tone A2
-    gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
-    
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start();
-    ambientOsc = osc;
+    // Unlock Web Audio API policy on browser gesture
+    if (audioCtx.state === 'suspended') {
+      await audioCtx.resume();
+    }
+
+    // Stop existing if any
+    if (ambientSoundInstance) {
+      ambientSoundInstance.stop();
+    }
+
+    // Master Gain (audible and soothing)
+    const masterGain = audioCtx.createGain();
+    masterGain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+
+    // 1. Warm Jazz Lounge Ambient Harmony (Cmaj7 / Am9 low warm acoustic tones)
+    const frequencies = [130.81, 164.81, 196.00, 246.94, 329.63]; // C3, E3, G3, B3, E4
+    const oscNodes = frequencies.map((freq, idx) => {
+      const osc = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+      osc.connect(g);
+      g.connect(masterGain);
+      osc.start();
+      return osc;
+    });
+
+    // 2. Vintage Vinyl & Cafe Acoustics (Soft Brown Noise Generation)
+    const bufferSize = audioCtx.sampleRate * 2;
+    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const output = noiseBuffer.getChannelData(0);
+    let lastOut = 0.0;
+    for (let i = 0; i < bufferSize; i++) {
+      const white = Math.random() * 2 - 1;
+      output[i] = (lastOut + (0.02 * white)) / 1.02;
+      lastOut = output[i];
+    }
+
+    const noiseSource = audioCtx.createBufferSource();
+    noiseSource.buffer = noiseBuffer;
+    noiseSource.loop = true;
+
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(750, audioCtx.currentTime);
+    filter.Q.setValueAtTime(1.2, audioCtx.currentTime);
+
+    const noiseGain = audioCtx.createGain();
+    noiseGain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+
+    noiseSource.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(masterGain);
+    noiseSource.start();
+
+    masterGain.connect(audioCtx.destination);
+
+    ambientSoundInstance = {
+      stop: () => {
+        oscNodes.forEach(o => { try { o.stop(); } catch(e){} });
+        try { noiseSource.stop(); } catch(e){}
+        try { masterGain.disconnect(); } catch(e){}
+      }
+    };
+
     isAudioPlaying = true;
+    return true;
   } catch (e) {
-    console.log('Web Audio API not supported', e);
+    console.error('Audio play error:', e);
+    showToast('Click anywhere on the page first to enable sound!');
+    return false;
   }
 }
 
 function stopAmbientAudio() {
-  if (ambientOsc) {
-    try { ambientOsc.stop(); } catch(e){}
-    ambientOsc = null;
-  }
-  if (audioCtx) {
-    try { audioCtx.close(); } catch(e){}
-    audioCtx = null;
+  if (ambientSoundInstance) {
+    ambientSoundInstance.stop();
+    ambientSoundInstance = null;
   }
   isAudioPlaying = false;
 }
