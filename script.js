@@ -180,7 +180,7 @@ const menuData = [
     name: '1919 Signature Heritage Latte',
     category: 'coffee',
     price: 240,
-    image: 'https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&w=600&q=80',
+    image: 'assets/images/coffee_latte.jpg',
     desc: 'Double espresso blended with sweetened condensed milk, infused with Pandan leaves and topped with gold leaf flakes.',
     tags: ['Signature', 'Hot / Iced'],
     details: 'Espresso roasted specifically for 1919 Grand Cafe by local master roasters. Notes of dark cacao, roasted hazelnut, and natural caramelized sugarcane.'
@@ -190,7 +190,7 @@ const menuData = [
     name: 'Binondo Spanish Latte',
     category: 'coffee',
     price: 230,
-    image: 'https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&w=600&q=80',
+    image: 'assets/images/coffee_spanish.jpg',
     desc: 'Creamy espresso crafted with fresh steamed dairy and velvety dulce de leche caramel finish.',
     tags: ['Bestseller'],
     details: 'Rich, smooth texture designed to complement our artisanal croissants and breakfast platters.'
@@ -200,7 +200,7 @@ const menuData = [
     name: 'Classic Cold Brew Tonic',
     category: 'coffee',
     price: 210,
-    image: 'https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=600&q=80',
+    image: 'assets/images/cold_brew.jpg',
     desc: '18-hour single origin cold brew poured over artisanal tonic water and fresh orange slice.',
     tags: ['Refreshing'],
     details: 'Bright citrus aromas paired with crisp effervescence. Perfect for Manila mid-day refresh.'
@@ -212,7 +212,7 @@ const menuData = [
     name: 'Grand HSBC Chocolate Vault Cake',
     category: 'pastries',
     price: 360,
-    image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=600&q=80',
+    image: 'assets/images/pastry_chocolate_cake.jpg',
     desc: 'Decadent 70% dark Belgian chocolate layer cake dusted with edible 24k gold leaf powder.',
     tags: ['Chef Special', 'Signature'],
     details: 'Inspired by the historic HSBC bank vault in which 1919 Grand Cafe sits. Features hazelnut praline crunch and sea salt caramel ganache.'
@@ -222,7 +222,7 @@ const menuData = [
     name: 'Artisanal Ube Leche Flan Tart',
     category: 'pastries',
     price: 290,
-    image: 'https://images.unsplash.com/photo-1535141192574-5d4897c13136?auto=format&fit=crop&w=600&q=80',
+    image: 'assets/images/ube_tart.jpg',
     desc: 'Flaky buttery shell filled with rich Pampanga purple yam halaya and silky caramel flan crown.',
     tags: ['Filipino Fusion'],
     details: 'A nostalgic Filipino classic elevated into a high-end French patisserie tartlet.'
@@ -232,7 +232,7 @@ const menuData = [
     name: 'Butter Croissant & Mango Cream',
     category: 'pastries',
     price: 220,
-    image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=600&q=80',
+    image: 'assets/images/pastry_croissant.jpg',
     desc: 'French Normandy butter croissant stuffed with ripe Guimaras mango reduction and chantilly.',
     tags: ['Freshly Baked'],
     details: 'Baked fresh every morning at 7:00 AM using imported French butter and local Guimaras mangoes.'
@@ -244,7 +244,7 @@ const menuData = [
     name: 'Truffle & Wild Mushroom Linguine',
     category: 'pasta',
     price: 580,
-    image: 'https://images.unsplash.com/photo-1621996346565-e3d5d6281274?auto=format&fit=crop&w=600&q=80',
+    image: 'assets/images/pasta_truffle.jpg',
     desc: 'Handmade linguine tossed in black truffle cream, cremini mushrooms, and 24-month aged Parmigiano.',
     tags: ['Bestseller'],
     details: 'Prepared with white truffle oil, roasted garlic cloves, and freshly shaved black truffles.'
@@ -254,7 +254,7 @@ const menuData = [
     name: 'Seafood Marinara & Squid Ink Fettuccine',
     category: 'pasta',
     price: 640,
-    image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80',
+    image: 'assets/images/pasta_truffle.jpg',
     desc: 'House-made squid ink pasta with tiger prawns, scallops, mussels in roasted cherry tomato passata.',
     tags: ['Premium Seafood'],
     details: 'Catch of the day fresh seafood simmered with garlic, white wine, and fresh basil.'
@@ -266,7 +266,7 @@ const menuData = [
     name: 'US Angus Ribeye Steak (300g)',
     category: 'mains',
     price: 1850,
-    image: 'https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=600&q=80',
+    image: 'assets/images/steak_ribeye.jpg',
     desc: 'USDA Choice prime ribeye seared in rosemary butter, served with roasted garlic mesh & bone marrow jus.',
     tags: ['Premium Steak'],
     details: 'Aged 28 days for exceptional tenderness and marbling. Served with your choice of truffle fries or garlic rice.'
@@ -276,7 +276,7 @@ const menuData = [
     name: 'Heritage Crispy Pata confit',
     category: 'filipino',
     price: 980,
-    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80',
+    image: 'assets/images/filipino_crispy_pata.jpg',
     desc: 'Slow-braised pork leg crisp-fried to golden perfection, served with spicy cane vinegar & liver dip.',
     tags: ['Filipino Classic', 'Shareable'],
     details: 'Serves 2-3 guests. Traditional 1920s Binondo banquet recipe passed down through generations.'
@@ -286,7 +286,7 @@ const menuData = [
     name: '1919 Wagyu Beef Tapa & Garlic Rice',
     category: 'filipino',
     price: 490,
-    image: 'https://images.unsplash.com/photo-1603073163308-9654c3fb70b5?auto=format&fit=crop&w=600&q=80',
+    image: 'assets/images/steak_ribeye.jpg',
     desc: 'Thinly sliced wagyu beef marinated in soy-calamansi, paired with fried egg, garlic sinangag & pickles.',
     tags: ['Breakfast & Brunch'],
     details: 'The ultimate elevated Filipino breakfast served all day inside our historic cafe.'
