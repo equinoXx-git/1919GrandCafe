@@ -676,10 +676,10 @@
           <p style="color: rgba(240,236,224,0.7); font-size: 0.88rem; margin-bottom: 1rem;">
             Receive exclusive invitations to tasting events, heritage dinners, and seasonal menus.
           </p>
-          <form style="display: flex; gap: 0.5rem;" onsubmit="event.preventDefault(); showToast('Welcome to the 1919 Grand Cafe family! ✉️');">
+          <form class="footer-newsletter-form" onsubmit="event.preventDefault(); showToast('Welcome to the 1919 Grand Cafe family! ✉️');">
             <input type="email" class="form-control" placeholder="Your email" 
-                   style="flex-grow: 1; background: rgba(240,236,224,0.08); border-color: rgba(201,161,74,0.3); color: var(--color-cream-light);" required>
-            <button type="submit" class="btn btn-gold" style="padding: 0.8rem 1.2rem;">
+                   style="flex-grow: 1; background: rgba(240,236,224,0.08); border-color: rgba(201,161,74,0.3); color: var(--color-cream-light); min-width: 0;" required>
+            <button type="submit" class="btn btn-gold" style="padding: 0.8rem 1.2rem; flex-shrink: 0;">
               <i class="fa-solid fa-paper-plane"></i>
             </button>
           </form>

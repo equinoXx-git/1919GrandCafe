@@ -390,15 +390,15 @@ window.openItemModal = function(id) {
   const modalBody = document.getElementById('modalBody');
 
   modalBody.innerHTML = `
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center;">
-      <img src="${item.image}" alt="${item.name}" style="width:100%; height:300px; object-fit:cover; border-radius: var(--radius-md); border: 1px solid var(--color-gold);">
-      <div>
+    <div class="modal-item-grid">
+      <img src="${item.image}" alt="${item.name}" class="modal-item-img">
+      <div class="modal-item-info">
         <span class="subheading-gold">${item.category.toUpperCase()} • ₱${item.price.toLocaleString()}</span>
-        <h3 style="font-size: 1.8rem; margin-bottom: 0.75rem; color: var(--color-charcoal);">${item.name}</h3>
-        <p style="color: var(--color-text-muted); margin-bottom: 1.2rem; font-size: 0.95rem;">${item.desc}</p>
-        <div style="padding: 1rem; background: var(--color-cream); border-left: 3px solid var(--color-gold); border-radius: 4px; margin-bottom: 1.5rem;">
-          <strong style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-gold-dark); display: block; margin-bottom: 0.3rem;">Culinary Notes:</strong>
-          <p style="font-size: 0.88rem; color: var(--color-charcoal); margin:0;">${item.details}</p>
+        <h3 class="modal-item-title">${item.name}</h3>
+        <p class="modal-item-desc">${item.desc}</p>
+        <div class="modal-item-notes">
+          <strong class="modal-item-notes-title">Culinary Notes:</strong>
+          <p class="modal-item-notes-text">${item.details}</p>
         </div>
         <button class="btn btn-gold" onclick="closeModal(); scrollToReservation();">Reserve Table to Taste</button>
       </div>
@@ -412,6 +412,12 @@ window.closeModal = function() {
   const backdrop = document.getElementById('modalBackdrop');
   if (backdrop) backdrop.classList.remove('active');
 };
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeModal();
+  }
+});
 
 window.scrollToReservation = function() {
   const section = document.getElementById('reservations');
@@ -545,24 +551,7 @@ function showToast(msg) {
   if (!toast) {
     toast = document.createElement('div');
     toast.id = 'toastNotice';
-    toast.style.cssText = `
-      position: fixed;
-      bottom: 2rem;
-      right: 2rem;
-      background: var(--color-charcoal);
-      color: var(--color-gold-light);
-      border: 1px solid var(--color-gold);
-      padding: 0.8rem 1.5rem;
-      border-radius: 50px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-      z-index: 2000;
-      transition: all 0.3s ease;
-      opacity: 0;
-      transform: translateY(20px);
-    `;
+    toast.className = 'toast-notice';
     document.body.appendChild(toast);
   }
 

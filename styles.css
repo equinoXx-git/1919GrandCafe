@@ -1025,8 +1025,68 @@ h1, h2, h3, h4, h5, h6 {
   z-index: 10;
 }
 
+.modal-card {
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
 .modal-body {
   padding: 2.5rem;
+}
+
+.modal-item-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: center;
+}
+
+.modal-item-img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-gold);
+}
+
+.modal-item-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-item-title {
+  font-size: 1.8rem;
+  margin-bottom: 0.75rem;
+  color: var(--color-charcoal);
+}
+
+.modal-item-desc {
+  color: var(--color-text-muted);
+  margin-bottom: 1.2rem;
+  font-size: 0.95rem;
+}
+
+.modal-item-notes {
+  padding: 1rem;
+  background: var(--color-cream);
+  border-left: 3px solid var(--color-gold);
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+}
+
+.modal-item-notes-title {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-gold-dark);
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+.modal-item-notes-text {
+  font-size: 0.88rem;
+  color: var(--color-charcoal);
+  margin: 0;
 }
 
 /* ==========================================================================
@@ -1387,6 +1447,12 @@ h1, h2, h3, h4, h5, h6 {
   transform: translateY(-3px);
 }
 
+.footer-newsletter-form {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+}
+
 .footer-bottom {
   padding-top: 2.5rem;
   border-top: 1px solid rgba(240, 236, 224, 0.1);
@@ -1397,9 +1463,46 @@ h1, h2, h3, h4, h5, h6 {
   color: rgba(240, 236, 224, 0.5);
 }
 
+.toast-notice {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: var(--color-charcoal);
+  color: var(--color-gold-light);
+  border: 1px solid var(--color-gold);
+  padding: 0.8rem 1.5rem;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  z-index: 2000;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+@media (max-width: 640px) {
+  .toast-notice {
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) translateY(20px);
+    max-width: 90vw;
+    width: max-content;
+    text-align: center;
+  }
+}
+
 /* ==========================================================================
-   RESPONSIVE DESIGN (MEDIA QUERIES)
+   RESPONSIVE DESIGN & OVERFLOW FIXES (MEDIA QUERIES)
    ========================================================================== */
+
+/* Prevent horizontal overflow globally */
+html, body {
+  overflow-x: hidden !important;
+  width: 100%;
+}
+
 @media (max-width: 1024px) {
   .story-grid,
   .location-grid,
@@ -1438,17 +1541,41 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @media (max-width: 768px) {
+  /* Reduce excessive vertical padding on sections for mobile */
+  .hero-section,
+  .story-section,
+  .highlights-section,
+  .philosophy-banner,
+  .menu-section,
+  .experience-section,
+  .gallery-section,
+  .reservation-section,
+  .location-section {
+    padding: 3.5rem 0;
+  }
+  
+  .hero-section {
+    min-height: auto;
+    padding-top: 4rem;
+    padding-bottom: 3.5rem;
+  }
+
+  /* Header & Navigation Drawer */
   .nav-links {
     display: none;
     position: absolute;
     top: var(--header-height);
     left: 0;
     width: 100%;
+    max-height: calc(100vh - var(--header-height));
+    overflow-y: auto;
     background: var(--color-charcoal);
     flex-direction: column;
-    padding: 2rem;
-    gap: 1.5rem;
+    padding: 2rem 1.5rem;
+    gap: 1.25rem;
     border-bottom: 1px solid var(--color-gold);
+    box-shadow: var(--shadow-lg);
+    z-index: 99;
   }
   
   .nav-links.active {
@@ -1457,19 +1584,116 @@ h1, h2, h3, h4, h5, h6 {
   
   .nav-link {
     color: var(--color-cream-light);
+    font-size: 1rem;
   }
   
   .mobile-menu-btn {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+  }
+
+  /* Hero Section */
+  .hero-title {
+    font-size: clamp(2.2rem, 7.5vw, 3.5rem);
   }
   
+  .hero-logo-crest {
+    width: 90px;
+    height: 90px;
+    margin-bottom: 1rem;
+  }
+
+  .hero-badge {
+    font-size: 0.72rem;
+    padding: 0.4rem 1rem;
+    margin-bottom: 1.25rem;
+  }
+  
+  .hero-description {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+  }
+
+  .hero-stats {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    padding-top: 2rem;
+  }
+
+  /* Story Section Overflow & Image Fix */
+  .story-badge-year {
+    left: 0;
+    top: -15px;
+    width: 85px;
+    height: 85px;
+  }
+
+  .story-badge-year .number {
+    font-size: 1.3rem;
+  }
+
+  .story-badge-year .label {
+    font-size: 0.55rem;
+  }
+
+  .story-text-content {
+    padding-left: 0;
+  }
+
+  .story-img-main {
+    height: 300px;
+  }
+
+  .story-img-floating {
+    height: 220px;
+  }
+
+  /* Culinary Highlights & Experience */
   .highlights-grid,
   .menu-grid,
-  .experience-grid,
-  .gallery-grid {
+  .experience-grid {
     grid-template-columns: 1fr;
+    gap: 1.75rem;
   }
-  
+
+  /* Gallery Grid */
+  .gallery-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .gallery-item {
+    height: 200px;
+  }
+
+  /* Menu Tabs Horizontal Scroll */
+  .menu-tabs {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    justify-content: flex-start;
+    gap: 0.6rem;
+    padding-bottom: 0.75rem;
+    margin-bottom: 2rem;
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .menu-tabs::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
+  }
+
+  .menu-tab-btn {
+    flex-shrink: 0;
+    padding: 0.6rem 1.25rem;
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+
+  /* Reservation & Location */
   .form-grid {
     grid-template-columns: 1fr;
   }
@@ -1477,14 +1701,155 @@ h1, h2, h3, h4, h5, h6 {
   .form-group.full-width {
     grid-column: span 1;
   }
-  
-  .hero-stats {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-  
+
   .res-info-panel,
   .res-form-panel {
-    padding: 2.5rem 1.5rem;
+    padding: 2rem 1.25rem;
+  }
+
+  .res-details-list li p {
+    word-break: break-word;
+  }
+
+  .location-info-box {
+    padding: 1.75rem 1.25rem;
+  }
+
+  .map-container {
+    height: 320px;
+  }
+
+  /* Footer */
+  .site-footer {
+    padding: 4rem 0 2rem;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .footer-brand p {
+    max-width: 100%;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+    padding-top: 2rem;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Menu Item Cards Stacking */
+  .menu-item-card {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.25rem;
+  }
+
+  .menu-item-thumb {
+    width: 100%;
+    height: 180px;
+  }
+
+  .menu-item-dots {
+    display: none;
+  }
+
+  .menu-item-header {
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .menu-item-title {
+    font-size: 1.15rem;
+  }
+
+  .menu-item-price {
+    font-size: 1.2rem;
+  }
+
+  /* Modal Responsiveness */
+  .modal-card {
+    width: 95%;
+    max-height: 90vh;
+    border-radius: var(--radius-sm);
+  }
+
+  .modal-body {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .modal-item-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .modal-item-img {
+    height: 200px;
+  }
+
+  .modal-close-btn {
+    top: 0.75rem;
+    right: 0.75rem;
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    width: 94%;
+    padding: 0 0.5rem;
+  }
+
+  /* Header Brand logo & actions on small screens */
+  .navbar {
+    gap: 0.5rem;
+  }
+
+  .nav-logo-img {
+    height: 42px;
+    width: 42px;
+  }
+
+  .brand-logo-text {
+    font-size: 1.1rem;
+  }
+
+  .brand-sub {
+    font-size: 0.58rem;
+  }
+
+  .nav-actions {
+    gap: 0.5rem;
+  }
+
+  #navReserveBtn {
+    padding: 0.6rem 0.9rem;
+    font-size: 0.72rem;
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .hero-buttons .btn {
+    width: 100%;
+  }
+
+  .gallery-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .philosophy-quote {
+    font-size: 1.6rem;
   }
 }
