@@ -87,8 +87,23 @@ async function startAmbientAudio() {
   // 1. Try playing Real Audio file (MP3 / WAV) if available
   if (bgMusic) {
     try {
-      bgMusic.volume = 0.5;
+      bgMusic.volume = 0;
       await bgMusic.play();
+
+      // Smooth fade-in over 2 seconds to 25% volume (subtle background level)
+      const targetVolume = 0.25;
+      const fadeDuration = 2000;
+      const fadeSteps = 40;
+      const fadeInterval = fadeDuration / fadeSteps;
+      const volumeStep = targetVolume / fadeSteps;
+      let currentStep = 0;
+
+      const fadeIn = setInterval(() => {
+        currentStep++;
+        bgMusic.volume = Math.min(volumeStep * currentStep, targetVolume);
+        if (currentStep >= fadeSteps) clearInterval(fadeIn);
+      }, fadeInterval);
+
       isAudioPlaying = true;
       showToast('Playing Heritage Cafe Music 🎵');
       return true;
