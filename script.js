@@ -254,7 +254,7 @@ const menuData = [
     name: 'Seafood Marinara & Squid Ink Fettuccine',
     category: 'pasta',
     price: 640,
-    image: 'assets/images/pasta_truffle.jpg',
+    image: 'assets/images/seafood_pasta.jpg',
     desc: 'House-made squid ink pasta with tiger prawns, scallops, mussels in roasted cherry tomato passata.',
     tags: ['Premium Seafood'],
     details: 'Catch of the day fresh seafood simmered with garlic, white wine, and fresh basil.'
