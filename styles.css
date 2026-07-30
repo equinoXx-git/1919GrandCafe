@@ -304,13 +304,17 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   justify-content: space-between;
   height: var(--header-height);
+  width: 100%;
+  gap: 0.75rem;
 }
 
 .brand-logo {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
+  gap: 0.75rem;
   text-decoration: none;
+  min-width: 0;
+  flex-shrink: 1;
 }
 
 .nav-logo-img {
@@ -318,30 +322,34 @@ h1, h2, h3, h4, h5, h6 {
   width: 52px;
   object-fit: contain;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+  flex-shrink: 0;
 }
 
 .brand-logo-text-group {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .brand-logo-text {
   font-family: var(--font-serif);
-  font-size: 1.4rem;
+  font-size: clamp(1rem, 3.8vw, 1.4rem);
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   color: var(--color-charcoal);
-  line-height: 1;
+  line-height: 1.1;
+  white-space: nowrap;
 }
 
 .brand-sub {
   font-family: var(--font-sans);
-  font-size: 0.65rem;
+  font-size: clamp(0.55rem, 2vw, 0.65rem);
   font-weight: 600;
-  letter-spacing: 0.25em;
+  letter-spacing: 0.2em;
   color: var(--color-gold-dark);
-  margin-top: 4px;
+  margin-top: 2px;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .hero-logo-crest {
@@ -406,7 +414,8 @@ h1, h2, h3, h4, h5, h6 {
 .nav-actions {
   display: flex;
   align-items: center;
-  gap: 1.2rem;
+  gap: 1rem;
+  flex-shrink: 0;
 }
 
 .audio-toggle-btn {
@@ -1805,35 +1814,55 @@ html, body {
 
 @media (max-width: 480px) {
   .container {
-    width: 94%;
-    padding: 0 0.5rem;
+    width: 95%;
+    padding: 0 0.4rem;
   }
 
   /* Header Brand logo & actions on small screens */
   .navbar {
+    gap: 0.4rem;
+  }
+
+  .brand-logo {
     gap: 0.5rem;
   }
 
   .nav-logo-img {
-    height: 42px;
-    width: 42px;
+    height: 38px;
+    width: 38px;
   }
 
   .brand-logo-text {
-    font-size: 1.1rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
   }
 
   .brand-sub {
-    font-size: 0.58rem;
+    font-size: 0.54rem;
+    letter-spacing: 0.14em;
+    margin-top: 1px;
   }
 
   .nav-actions {
-    gap: 0.5rem;
+    gap: 0.4rem;
+  }
+
+  .audio-toggle-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 0.8rem;
   }
 
   #navReserveBtn {
-    padding: 0.6rem 0.9rem;
-    font-size: 0.72rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+  }
+
+  .mobile-menu-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 1.25rem;
   }
 
   .hero-buttons {
@@ -1851,5 +1880,48 @@ html, body {
 
   .philosophy-quote {
     font-size: 1.6rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .container {
+    width: 98%;
+    padding: 0 0.25rem;
+  }
+
+  .nav-logo-img {
+    height: 32px;
+    width: 32px;
+  }
+
+  .brand-logo-text {
+    font-size: 0.86rem;
+    letter-spacing: 0.02em;
+  }
+
+  .brand-sub {
+    font-size: 0.48rem;
+    letter-spacing: 0.1em;
+  }
+
+  .nav-actions {
+    gap: 0.25rem;
+  }
+
+  .audio-toggle-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 0.75rem;
+  }
+
+  #navReserveBtn {
+    padding: 0.45rem 0.55rem;
+    font-size: 0.65rem;
+  }
+
+  .mobile-menu-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 1.1rem;
   }
 }
