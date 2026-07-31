@@ -75,8 +75,36 @@ function setTheme(theme, showNotification = true) {
     mobileToggleBtn.innerHTML = mobileContent;
   }
 
+  updateLogos();
+
   if (showNotification) {
     showToast(theme === 'dark' ? 'Switched to Noir Dark Mode 🌙' : 'Switched to Heritage Light Mode ☀️');
+  }
+}
+
+/* Dynamic Logo Theme & Scroll Switcher */
+function updateLogos() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const header = document.querySelector('.site-header');
+  const isScrolled = header && header.classList.contains('scrolled');
+
+  const navLogoImg = document.getElementById('navLogoImg');
+  const heroLogoImg = document.getElementById('heroLogoImg');
+  const footerLogoImg = document.getElementById('footerLogoImg');
+
+  // Nav Logo: white logo when dark theme is active OR header is scrolled over dark content
+  if (navLogoImg) {
+    navLogoImg.src = (isDark || isScrolled) ? 'assets/images/logo-white.png' : 'assets/images/logo.png';
+  }
+
+  // Hero Crest Logo: white logo when dark mode is enabled
+  if (heroLogoImg) {
+    heroLogoImg.src = isDark ? 'assets/images/logo-white.png' : 'assets/images/logo.png';
+  }
+
+  // Footer Logo: white logo when dark mode is enabled
+  if (footerLogoImg) {
+    footerLogoImg.src = isDark ? 'assets/images/logo-white.png' : 'assets/images/logo.png';
   }
 }
 
@@ -89,6 +117,7 @@ function initHeaderScroll() {
     } else {
       header.classList.remove('scrolled');
     }
+    updateLogos();
   });
 }
 
