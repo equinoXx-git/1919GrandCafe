@@ -311,19 +311,30 @@ h1, h2, h3, h4, h5, h6 {
 .brand-logo {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.75rem;
   text-decoration: none;
   min-width: 0;
   flex-shrink: 1;
   overflow: hidden;
+  transition: var(--transition-fast);
+}
+
+.brand-logo:hover {
+  opacity: 0.95;
 }
 
 .nav-logo-img {
   height: 48px;
   width: 48px;
   object-fit: contain;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.15));
   flex-shrink: 0;
+  transition: var(--transition-fast);
+}
+
+.brand-logo:hover .nav-logo-img {
+  filter: drop-shadow(0 4px 12px rgba(201, 161, 74, 0.4));
+  transform: scale(1.03);
 }
 
 .brand-logo-text-group {
@@ -335,11 +346,11 @@ h1, h2, h3, h4, h5, h6 {
 
 .brand-logo-text {
   font-family: var(--font-serif);
-  font-size: clamp(0.95rem, 3.5vw, 1.4rem);
+  font-size: clamp(1rem, 3.2vw, 1.38rem);
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   color: var(--color-charcoal);
-  line-height: 1.1;
+  line-height: 1.12;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -347,11 +358,11 @@ h1, h2, h3, h4, h5, h6 {
 
 .brand-sub {
   font-family: var(--font-sans);
-  font-size: clamp(0.5rem, 2vw, 0.65rem);
+  font-size: clamp(0.5rem, 1.8vw, 0.62rem);
   font-weight: 600;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.22em;
   color: var(--color-gold-dark);
-  margin-top: 2px;
+  margin-top: 3px;
   text-transform: uppercase;
   white-space: nowrap;
   overflow: hidden;
@@ -1613,8 +1624,8 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ---- Header ---- */
 [data-theme="dark"] .site-header {
-  background: rgba(18, 18, 18, 0.94);
-  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+  background: rgba(14, 14, 14, 0.96);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.18);
 }
 
 [data-theme="dark"] .brand-logo-text {
@@ -1625,8 +1636,12 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--color-gold-light);
 }
 
+[data-theme="dark"] .brand-logo:hover .nav-logo-img {
+  filter: drop-shadow(0 4px 14px rgba(212, 175, 55, 0.45));
+}
+
 [data-theme="dark"] .nav-link {
-  color: var(--color-text-main);
+  color: rgba(240, 236, 224, 0.85);
 }
 
 [data-theme="dark"] .nav-link:hover,
@@ -1643,9 +1658,15 @@ h1, h2, h3, h4, h5, h6 {
   border-color: rgba(212, 175, 55, 0.4);
 }
 
+[data-theme="dark"] .audio-toggle-btn {
+  color: var(--color-gold-light);
+  border-color: rgba(212, 175, 55, 0.35);
+}
+
 /* When scrolled in dark mode - keep same dark look */
 [data-theme="dark"] .site-header.scrolled {
-  background: rgba(12, 12, 12, 0.97);
+  background: rgba(10, 10, 10, 0.97);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.25);
 }
 
 /* ---- Announcement Ticker ---- */
@@ -2440,11 +2461,17 @@ html, body {
   .nav-logo-img {
     height: 34px;
     width: 34px;
+    padding: 1px;
+  }
+
+  .brand-logo-text-group {
+    border-left: none;
+    padding-left: 0;
   }
 
   .brand-logo-text {
     font-size: 0.85rem;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.04em;
   }
 
   .brand-sub {
