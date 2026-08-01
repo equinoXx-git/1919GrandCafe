@@ -7,6 +7,7 @@
 CREATE TABLE IF NOT EXISTS public.reservations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     full_name TEXT NOT NULL,
+    email TEXT NOT NULL,
     phone TEXT NOT NULL,
     reservation_date DATE NOT NULL,
     reservation_time TEXT NOT NULL,
@@ -16,6 +17,10 @@ CREATE TABLE IF NOT EXISTS public.reservations (
     status TEXT NOT NULL DEFAULT 'pending',
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Ensure email column exists if table was created previously
+ALTER TABLE public.reservations 
+    ADD COLUMN IF NOT EXISTS email TEXT;
 
 -- Constraint for status validation
 ALTER TABLE public.reservations 

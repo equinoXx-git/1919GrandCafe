@@ -530,6 +530,7 @@ function initReservationForm() {
 
   const fields = {
     name:   document.getElementById('resName'),
+    email:  document.getElementById('resEmail'),
     phone:  document.getElementById('resPhone'),
     date:   document.getElementById('resDate'),
     time:   document.getElementById('resTime'),
@@ -558,6 +559,14 @@ function initReservationForm() {
     if (!fields.name.value.trim() || fields.name.value.trim().length < 2)
       setErr(fields.name, 'Please enter your full name (at least 2 characters).');
     else clearFieldError(fields.name);
+
+    // Email Address
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!fields.email || !fields.email.value.trim())
+      setErr(fields.email, 'Email address is required.');
+    else if (!emailRegex.test(fields.email.value.trim()))
+      setErr(fields.email, 'Please enter a valid email address (e.g. name@example.com).');
+    else clearFieldError(fields.email);
 
     // PH Phone (+639xxxxxxxxx, 09xxxxxxxxx, or with spaces/dashes)
     const phoneCleaned = fields.phone.value.replace(/[\s\-()]/g, '');
@@ -610,6 +619,7 @@ function initReservationForm() {
 
       const data = {
         full_name:          fields.name.value.trim(),
+        email:              fields.email.value.trim(),
         phone:              fields.phone.value.trim(),
         reservation_date:   fields.date.value,
         reservation_time:   fields.time.value,
@@ -638,7 +648,7 @@ function initReservationForm() {
 
       if (modalBody && backdrop) {
         const eName  = escapeHtml(fields.name.value.trim());
-        const ePhone = escapeHtml(fields.phone.value.trim());
+        const eEmail = escapeHtml(fields.email.value.trim());
 
         modalBody.innerHTML = `
           <div style="text-align: center; padding: 1rem 0;">
@@ -671,7 +681,7 @@ function initReservationForm() {
             </div>
 
             <p style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 1.5rem;">
-              A confirmation will be sent to <strong>${ePhone}</strong>.<br>
+              A confirmation email has been dispatched to <strong>${eEmail}</strong>.<br>
               Location: 117 Juan Luna St., Binondo, Manila.
             </p>
 
@@ -732,6 +742,7 @@ async function sendReservationEmail(reservation) {
     access_key: WEB3FORMS_KEY,
     subject:    `🍽️ New Reservation — ${reservation.full_name}`,
     from_name:  '1919 Grand Cafe Reservations',
+    email:      reservation.email, // Customer email for Web3Forms Reply-To & notifications
 
     // Formatted email body
     name:       reservation.full_name,
@@ -740,6 +751,7 @@ async function sendReservationEmail(reservation) {
       `📋  NEW TABLE RESERVATION`,
       `━━━━━━━━━━━━━━━━━━━━━━━━`,
       `👤  Name:     ${reservation.full_name}`,
+      `✉️  Email:    ${reservation.email}`,
       `📞  Phone:    ${reservation.phone}`,
       `📅  Date:     ${reservation.reservation_date}`,
       `🕐  Time:     ${reservation.reservation_time}`,
