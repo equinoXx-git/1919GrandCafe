@@ -739,15 +739,44 @@ function setDefaultReservationDate() {
   d.value = fmt(tmr);                            // default to tomorrow
 }
 
-/* Phase 4 — Customer Autoresponder Integration (EmailJS + Web3Forms) */
-const WEB3FORMS_KEY = 'e00bc05e-5abc-4f72-b58a-a4aeb5cb4de0';
-
-// Active EmailJS Credentials for Customer Autoresponder
-window.EMAILJS_SERVICE_ID  = window.EMAILJS_SERVICE_ID  || 'service_8qop5j3';
-window.EMAILJS_TEMPLATE_ID = window.EMAILJS_TEMPLATE_ID || 'template_rgqb1mr';
-window.EMAILJS_PUBLIC_KEY  = window.EMAILJS_PUBLIC_KEY  || 'txHsr4wqRpTGE5c3Q';
+/* Phase 4 — Dual Email Notifications (Owner Alert via Web3Forms + Customer Autoresponder via EmailJS) */
+const WEB3FORMS_KEY       = 'e00bc05e-5abc-4f72-b58a-a4aeb5cb4de0';
+const EMAILJS_SERVICE_ID  = 'service_8qop5j3';
+const EMAILJS_TEMPLATE_ID = 'template_rgqb1mr';
+const EMAILJS_PUBLIC_KEY  = 'txHsr4wqRpTGE5c3Q';
 
 async function sendReservationEmail(reservation) {
+  // Comprehensive template variable mapping for EmailJS template flexibility
+  const templateParams = {
+    // Recipient Email Aliases
+    to_email:           reservation.email,
+    email:              reservation.email,
+    user_email:         reservation.email,
+    customer_email:     reservation.email,
+    recipient_email:    reservation.email,
+
+    // Customer Name Aliases
+    to_name:            reservation.full_name,
+    name:               reservation.full_name,
+    customer_name:      reservation.full_name,
+    full_name:          reservation.full_name,
+
+    // Reservation Details
+    phone:              reservation.phone,
+    reservation_date:   reservation.reservation_date,
+    date:               reservation.reservation_date,
+    reservation_time:   reservation.reservation_time,
+    time:               reservation.reservation_time,
+    guests:             `${reservation.guests} Guest(s)`,
+    party_size:         `${reservation.guests} Guest(s)`,
+    seating_preference: reservation.seating_preference,
+    seating:            reservation.seating_preference,
+    special_requests:   reservation.special_requests || 'None',
+    notes:              reservation.special_requests || 'None',
+    status:             'PENDING CONFIRMATION',
+    reply_to:           'reservations@1919grandcafe.ph'
+  };
+
   // 1. Notification to Café Owner (Web3Forms)
   const ownerPayload = {
     access_key:    WEB3FORMS_KEY,
@@ -775,56 +804,55 @@ async function sendReservationEmail(reservation) {
     ].join('\n')
   };
 
-  const ownerPromise = fetch('https://api.web3forms.com/submit', {
+  const sendOwnerEmail = fetch('https://api.web3forms.com/submit', {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
     body:    JSON.stringify(ownerPayload)
   });
 
-  // 2. Dispatch Customer Autoresponder Email (EmailJS or FormSubmit)
-  let customerPromise = null;
-  if (window.emailjs && window.EMAILJS_PUBLIC_KEY && window.EMAILJS_SERVICE_ID && window.EMAILJS_TEMPLATE_ID) {
-    customerPromise = window.emailjs.send(
-      window.EMAILJS_SERVICE_ID,
-      window.EMAILJS_TEMPLATE_ID,
-      {
-        to_name:            reservation.full_name,
-        to_email:           reservation.email,
-        reservation_date:   reservation.reservation_date,
-        reservation_time:   reservation.reservation_time,
-        guests:             reservation.guests,
-        seating_preference: reservation.seating_preference,
-        special_requests:   reservation.special_requests || 'None',
-        reply_to:           'reservations@1919grandcafe.ph'
-      },
-      window.EMAILJS_PUBLIC_KEY
-    );
-  } else {
-    customerPromise = fetch(`https://formsubmit.co/ajax/${reservation.email}`, {
+  // 2. Direct Confirmation Email to Customer (EmailJS)
+  const sendCustomerEmail = async () => {
+    // Try EmailJS SDK if initialized
+    if (window.emailjs) {
+      try {
+        if (typeof window.emailjs.init === 'function') {
+          window.emailjs.init(EMAILJS_PUBLIC_KEY);
+        }
+        const sdkRes = await window.emailjs.send(
+          EMAILJS_SERVICE_ID,
+          EMAILJS_TEMPLATE_ID,
+          templateParams,
+          EMAILJS_PUBLIC_KEY
+        );
+        console.log('Customer EmailJS SDK dispatch success:', sdkRes);
+        return sdkRes;
+      } catch (sdkErr) {
+        console.warn('EmailJS SDK error, attempting direct REST fetch:', sdkErr);
+      }
+    }
+
+    // Direct REST API fetch to EmailJS endpoint
+    const restRes = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
       method:  'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({
-        _subject:           `✨ Table Reservation Confirmation — 1919 Grand Cafe Binondo`,
-        _template:          'table',
-        _captcha:           'false',
-        'Customer Name':     reservation.full_name,
-        'Reservation Date':  reservation.reservation_date,
-        'Reservation Time':  reservation.reservation_time,
-        'Party Size':        `${reservation.guests} Guest(s)`,
-        'Seating Preference':reservation.seating_preference,
-        'Special Requests':  reservation.special_requests || 'None',
-        'Restaurant':        '1919 Grand Cafe Binondo',
-        'Address':           '117 Juan Luna St., Binondo, Manila',
-        'Status':            'PENDING CONFIRMATION'
+        service_id:      EMAILJS_SERVICE_ID,
+        template_id:     EMAILJS_TEMPLATE_ID,
+        user_id:         EMAILJS_PUBLIC_KEY,
+        template_params: templateParams
       })
     });
-  }
+
+    const resText = await restRes.text();
+    console.log('Customer EmailJS REST response:', restRes.status, resText);
+    return resText;
+  };
 
   try {
-    await Promise.allSettled([ownerPromise, customerPromise]);
-    console.log('Dual reservation emails dispatched.');
+    await Promise.allSettled([sendOwnerEmail, sendCustomerEmail()]);
+    console.log('Reservation emails dispatched to both owner and customer.');
   } catch (err) {
-    console.warn('Email dispatch warning:', err);
+    console.warn('Email dispatch error:', err);
   }
 }
 
