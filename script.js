@@ -739,8 +739,13 @@ function setDefaultReservationDate() {
   d.value = fmt(tmr);                            // default to tomorrow
 }
 
-/* Phase 4 — Dual Email Notifications (Owner Alert + Customer Confirmation) */
+/* Phase 4 — Customer Autoresponder Integration (EmailJS + Web3Forms) */
 const WEB3FORMS_KEY = 'e00bc05e-5abc-4f72-b58a-a4aeb5cb4de0';
+
+// Configure EmailJS keys here or set on window object for free customer emails (200/month)
+window.EMAILJS_SERVICE_ID  = window.EMAILJS_SERVICE_ID  || '';
+window.EMAILJS_TEMPLATE_ID = window.EMAILJS_TEMPLATE_ID || '';
+window.EMAILJS_PUBLIC_KEY  = window.EMAILJS_PUBLIC_KEY  || '';
 
 async function sendReservationEmail(reservation) {
   // 1. Notification to Café Owner (Web3Forms)
@@ -750,7 +755,6 @@ async function sendReservationEmail(reservation) {
     from_name:     '1919 Grand Cafe System',
     email:         reservation.email,
     replyto:       reservation.email,
-
     name:          reservation.full_name,
     phone:         reservation.phone,
     message:       [
@@ -771,40 +775,54 @@ async function sendReservationEmail(reservation) {
     ].join('\n')
   };
 
-  // 2. Direct Confirmation Email to Customer (FormSubmit API)
-  const customerPayload = {
-    _subject:           `✨ Table Reservation Confirmation — 1919 Grand Cafe Binondo`,
-    _template:          'table',
-    _captcha:           'false',
-    'Customer Name':     reservation.full_name,
-    'Reservation Date':  reservation.reservation_date,
-    'Reservation Time':  reservation.reservation_time,
-    'Party Size':        `${reservation.guests} Guest(s)`,
-    'Seating Preference':reservation.seating_preference,
-    'Special Requests':  reservation.special_requests || 'None',
-    'Restaurant':        '1919 Grand Cafe Binondo',
-    'Address':           '117 Juan Luna St., Binondo, Manila',
-    'Contact Phone':     '(02) 7-752 0654 | (0961) 244 4508',
-    'Status':            'PENDING CONFIRMATION'
-  };
+  const ownerPromise = fetch('https://api.web3forms.com/submit', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify(ownerPayload)
+  });
+
+  // 2. Dispatch Customer Autoresponder Email (EmailJS or FormSubmit)
+  let customerPromise = null;
+  if (window.emailjs && window.EMAILJS_PUBLIC_KEY && window.EMAILJS_SERVICE_ID && window.EMAILJS_TEMPLATE_ID) {
+    customerPromise = window.emailjs.send(
+      window.EMAILJS_SERVICE_ID,
+      window.EMAILJS_TEMPLATE_ID,
+      {
+        to_name:            reservation.full_name,
+        to_email:           reservation.email,
+        reservation_date:   reservation.reservation_date,
+        reservation_time:   reservation.reservation_time,
+        guests:             reservation.guests,
+        seating_preference: reservation.seating_preference,
+        special_requests:   reservation.special_requests || 'None',
+        reply_to:           'reservations@1919grandcafe.ph'
+      },
+      window.EMAILJS_PUBLIC_KEY
+    );
+  } else {
+    customerPromise = fetch(`https://formsubmit.co/ajax/${reservation.email}`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body:    JSON.stringify({
+        _subject:           `✨ Table Reservation Confirmation — 1919 Grand Cafe Binondo`,
+        _template:          'table',
+        _captcha:           'false',
+        'Customer Name':     reservation.full_name,
+        'Reservation Date':  reservation.reservation_date,
+        'Reservation Time':  reservation.reservation_time,
+        'Party Size':        `${reservation.guests} Guest(s)`,
+        'Seating Preference':reservation.seating_preference,
+        'Special Requests':  reservation.special_requests || 'None',
+        'Restaurant':        '1919 Grand Cafe Binondo',
+        'Address':           '117 Juan Luna St., Binondo, Manila',
+        'Status':            'PENDING CONFIRMATION'
+      })
+    });
+  }
 
   try {
-    await Promise.allSettled([
-      fetch('https://api.web3forms.com/submit', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(ownerPayload)
-      }),
-      fetch(`https://formsubmit.co/ajax/${reservation.email}`, {
-        method:  'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body:    JSON.stringify(customerPayload)
-      })
-    ]);
-    console.log('Dual reservation emails dispatched successfully.');
+    await Promise.allSettled([ownerPromise, customerPromise]);
+    console.log('Dual reservation emails dispatched.');
   } catch (err) {
     console.warn('Email dispatch warning:', err);
   }
