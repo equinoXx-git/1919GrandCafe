@@ -3,29 +3,53 @@
    Phase 3: Database Integration
    ========================================================================== */
 
-// ─── Supabase Configuration ───
-// For Cloudflare Pages: set these as environment variables in the dashboard
-// (Settings → Environment variables) and inject them at build time.
-// For development, the values below are used directly.
 const SUPABASE_URL  = 'https://sxhkjyxruumschlqoywd.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4aGtqeXhydXVtc2NobHFveXdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1NTM2MjUsImV4cCI6MjEwMTEyOTYyNX0.WCv7a9SVKDG8XsSEEz3Wj1Ciran0afgJhKcvlgIXuAE';
 
-// Initialise the Supabase client (supabase-js v2 loaded via CDN in index.html)
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+let supabaseInstance = null;
+
+function getSupabaseClient() {
+  if (supabaseInstance) return supabaseInstance;
+  if (window.supabase && typeof window.supabase.createClient === 'function') {
+    supabaseInstance = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+    return supabaseInstance;
+  }
+  return null;
+}
 
 // ─── Public API: Insert Reservation ───
-// Called by the form handler in script.js via window.submitReservationToSupabase
 window.submitReservationToSupabase = async function (reservationData) {
-  const { data, error } = await supabase
+  const client = getSupabaseClient();
+  if (!client) {
+    throw new Error('Supabase SDK not initialized. Verify script CDN tag.');
+  }
+
+  // Attempt insert with all fields
+  let { data, error } = await client
     .from('reservations')
     .insert([reservationData])
     .select();
 
-  if (error) {
-    console.error('Supabase insert error:', error);
-    throw new Error(error.message || 'Failed to save reservation.');
+  // Graceful fallback if 'email' column is missing in user's Supabase schema
+  if (error && error.message && error.message.toLowerCase().includes('email')) {
+    console.warn('Retrying Supabase insert without email column:', error.message);
+    const fallbackData = { ...reservationData };
+    delete fallbackData.email;
+    
+    const retry = await client
+      .from('reservations')
+      .insert([fallbackData])
+      .select();
+      
+    data = retry.data;
+    error = retry.error;
   }
 
-  console.log('Reservation saved:', data);
+  if (error) {
+    console.error('Supabase insert error details:', error);
+    throw new Error(error.message || 'Failed to save reservation to Supabase.');
+  }
+
+  console.log('Reservation saved to Supabase:', data);
   return data;
 };

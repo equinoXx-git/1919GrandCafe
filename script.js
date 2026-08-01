@@ -629,17 +629,21 @@ function initReservationForm() {
         status:             'pending'
       };
 
-      // Phase 3 — Supabase insert
-      if (typeof window.submitReservationToSupabase === 'function') {
-        await window.submitReservationToSupabase(data);
-      } else {
-        await new Promise(r => setTimeout(r, 700)); // simulate latency
+      // Phase 3 — Supabase insert (decoupled so DB errors won't block email or UI confirmation)
+      try {
+        if (typeof window.submitReservationToSupabase === 'function') {
+          await window.submitReservationToSupabase(data);
+        }
+      } catch (dbErr) {
+        console.error('Supabase storage alert:', dbErr);
       }
 
-      // Phase 4 — Web3Forms email notification (fire-and-forget)
-      sendReservationEmail(data).catch(err =>
-        console.warn('Email notification failed (non-blocking):', err)
-      );
+      // Phase 4 — Web3Forms email notification (sends to owner & customer auto-reply)
+      try {
+        await sendReservationEmail(data);
+      } catch (emailErr) {
+        console.warn('Email dispatch alert:', emailErr);
+      }
 
       /* -------- Success modal -------- */
       const refCode  = '1919-' + Math.floor(100000 + Math.random() * 900000);
@@ -739,15 +743,17 @@ const WEB3FORMS_KEY = 'e00bc05e-5abc-4f72-b58a-a4aeb5cb4de0';
 
 async function sendReservationEmail(reservation) {
   const payload = {
-    access_key: WEB3FORMS_KEY,
-    subject:    `🍽️ New Reservation — ${reservation.full_name}`,
-    from_name:  '1919 Grand Cafe Reservations',
-    email:      reservation.email, // Customer email for Web3Forms Reply-To & notifications
+    access_key:    WEB3FORMS_KEY,
+    subject:       `🍽️ New Reservation — ${reservation.full_name}`,
+    from_name:     '1919 Grand Cafe Reservations',
+    email:         reservation.email,
+    replyto:       reservation.email,
+    autoresponder: "true",
 
     // Formatted email body
-    name:       reservation.full_name,
-    phone:      reservation.phone,
-    message:    [
+    name:          reservation.full_name,
+    phone:         reservation.phone,
+    message:       [
       `📋  NEW TABLE RESERVATION`,
       `━━━━━━━━━━━━━━━━━━━━━━━━`,
       `👤  Name:     ${reservation.full_name}`,
