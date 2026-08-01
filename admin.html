@@ -438,17 +438,108 @@
 
     .admin-toast.show { transform: translateY(0); opacity: 1; }
 
-    /* Print View Customization */
+    /* Print View — Professional Hostess Sheet */
     @media print {
-      body { background: #fff; color: #000; }
-      .admin-navbar, .metrics-grid, .controls-panel, .action-btns, .auth-overlay, .nav-actions { display: none !important; }
-      .table-responsive { border: none; }
-      .reservations-table th, .reservations-table td { border-bottom: 1px solid #ccc; color: #000; }
-      .status-badge { border: 1px solid #000; color: #000; }
+      @page {
+        size: landscape;
+        margin: 0.6in 0.5in;
+      }
+
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+      body {
+        background: #fff !important;
+        color: #1a1a1a !important;
+        font-size: 9pt;
+        font-family: 'Plus Jakarta Sans', 'Segoe UI', Arial, sans-serif;
+      }
+
+      /* Hide all interactive UI */
+      .admin-navbar, .metrics-grid, .controls-panel,
+      .action-btns, .auth-overlay, .modal-backdrop,
+      .admin-toast, .live-status-pill, .nav-actions { display: none !important; }
+
+      /* Show branded print header */
+      .print-header { display: flex !important; }
+
+      .admin-container { max-width: 100%; width: 100%; margin: 0; padding: 0; }
+
+      .table-responsive {
+        border: 2px solid #1a1a1a;
+        border-radius: 0;
+        overflow: visible;
+      }
+
+      .reservations-table { font-size: 8.5pt; }
+
+      .reservations-table th {
+        background: #1a1a1a !important;
+        color: #fff !important;
+        font-size: 7.5pt;
+        padding: 0.5rem 0.6rem;
+        letter-spacing: 0.08em;
+        border-bottom: 2px solid #1a1a1a;
+      }
+
+      .reservations-table td {
+        padding: 0.45rem 0.6rem;
+        border-bottom: 1px solid #d0d0d0;
+        color: #1a1a1a;
+        font-size: 8.5pt;
+        line-height: 1.4;
+      }
+
+      .reservations-table tr:nth-child(even) td {
+        background: #f5f5f2 !important;
+      }
+
+      .reservations-table tr:hover { background: transparent; }
+
+      /* Hide Actions column (last col) */
+      .reservations-table th:last-child,
+      .reservations-table td:last-child { display: none; }
+
+      /* Status badges for print */
+      .status-badge {
+        font-size: 7pt;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-weight: 700;
+      }
+      .status-badge.pending   { background: #fff3cd !important; color: #856404 !important; border: 1px solid #856404; }
+      .status-badge.confirmed { background: #d4edda !important; color: #155724 !important; border: 1px solid #155724; }
+      .status-badge.cancelled { background: #f8d7da !important; color: #721c24 !important; border: 1px solid #721c24; }
+
+      /* Links as plain text */
+      a { color: #1a1a1a !important; text-decoration: none !important; }
+
+      /* Print footer */
+      .print-footer { display: block !important; }
     }
   </style>
 </head>
 <body>
+
+  <!-- Print-Only Branded Header (hidden on screen, shown on print) -->
+  <div class="print-header" style="display:none; align-items:center; justify-content:space-between; padding-bottom:0.8rem; margin-bottom:0.8rem; border-bottom:2px solid #1a1a1a;">
+    <div style="display:flex; align-items:center; gap:0.8rem;">
+      <img src="assets/images/logo.png" alt="1919 Logo" style="width:50px; height:50px; object-fit:contain;">
+      <div>
+        <h2 style="font-family:'Cormorant Garamond',Georgia,serif; font-size:18pt; margin:0; letter-spacing:0.05em;">1919 GRAND CAFE</h2>
+        <p style="font-size:8pt; color:#666; margin:0; letter-spacing:0.1em;">117 Juan Luna St, Binondo, Manila · Tel: (02) 8241-1919</p>
+      </div>
+    </div>
+    <div style="text-align:right;">
+      <h3 style="font-size:12pt; margin:0 0 2px 0; font-weight:700;">RESERVATIONS SHEET</h3>
+      <p style="font-size:8pt; color:#666; margin:0;" id="printDate"></p>
+      <p style="font-size:7pt; color:#999; margin:2px 0 0 0;">Prepared for Front-of-House Staff</p>
+    </div>
+  </div>
+
+  <!-- Print-Only Footer (hidden on screen, shown on print) -->
+  <div class="print-footer" style="display:none; margin-top:1rem; padding-top:0.6rem; border-top:1px solid #ccc; font-size:7.5pt; color:#888; text-align:center;">
+    This document is confidential and intended for 1919 Grand Cafe staff only. · Generated from Admin Dashboard
+  </div>
 
   <!-- Security Passkey Modal -->
   <div class="auth-overlay" id="authOverlay">
@@ -479,7 +570,7 @@
     <div class="nav-actions">
       <button class="btn-icon" id="soundToggleBtn" onclick="toggleSound()" title="Toggle Sound Alert"><i class="fa-solid fa-volume-high"></i> Sound ON</button>
       <button class="btn-icon" onclick="exportToCSV()" title="Export Reservations CSV"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
-      <button class="btn-icon" onclick="window.print()" title="Print Hostess Sheet"><i class="fa-solid fa-print"></i> Print Sheet</button>
+      <button class="btn-icon" onclick="printSheet()" title="Print Hostess Sheet"><i class="fa-solid fa-print"></i> Print Sheet</button>
       <button class="btn-icon" onclick="fetchReservations(true)"><i class="fa-solid fa-rotate"></i> Refresh</button>
       <a href="index.html" class="btn-icon" target="_blank"><i class="fa-solid fa-globe"></i> Website</a>
       <button class="btn-icon" onclick="logoutAdmin()"><i class="fa-solid fa-right-from-bracket"></i> Lock</button>
@@ -896,6 +987,17 @@
     function escapeHtml(s) {
       const map = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'};
       return String(s).replace(/[&<>"']/g, c => map[c]);
+    }
+
+    // ─── Print Hostess Sheet ───
+    function printSheet() {
+      const now = new Date();
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const dateStr = now.toLocaleDateString('en-PH', options);
+      const timeStr = now.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' });
+      const el = document.getElementById('printDate');
+      if (el) el.textContent = `Printed: ${dateStr} at ${timeStr}`;
+      setTimeout(() => window.print(), 100);
     }
 
     function showAdminToast(msg) {
