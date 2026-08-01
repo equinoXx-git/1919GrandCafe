@@ -30,35 +30,43 @@ ALTER TABLE public.reservations
 -- 2. Enable Row Level Security (RLS)
 ALTER TABLE public.reservations ENABLE ROW LEVEL SECURITY;
 
--- 3. RLS Policies
+-- 3. Clean up existing policies
+DROP POLICY IF EXISTS "Allow public insert reservations" ON public.reservations;
+DROP POLICY IF EXISTS "Allow admin select reservations" ON public.reservations;
+DROP POLICY IF EXISTS "Allow admin update reservations" ON public.reservations;
+DROP POLICY IF EXISTS "Allow admin delete reservations" ON public.reservations;
+DROP POLICY IF EXISTS "Enable insert for all users" ON public.reservations;
+DROP POLICY IF EXISTS "Enable read for all users" ON public.reservations;
 
--- Policy 1: Allow public (anonymous + authenticated) users to submit reservations
+-- 4. RLS Policies (Targeting 'public' ensures both website form & admin dashboard work seamlessly)
+
+-- Policy 1: Allow public users to submit reservations
 CREATE POLICY "Allow public insert reservations"
     ON public.reservations
     FOR INSERT
-    TO anon, authenticated
+    TO public
     WITH CHECK (true);
 
--- Policy 2: Allow authenticated admins to view all reservations
-CREATE POLICY "Allow admin select reservations"
+-- Policy 2: Allow admin dashboard to view reservations
+CREATE POLICY "Allow public select reservations"
     ON public.reservations
     FOR SELECT
-    TO authenticated
+    TO public
     USING (true);
 
--- Policy 3: Allow authenticated admins to update reservation status/details
-CREATE POLICY "Allow admin update reservations"
+-- Policy 3: Allow admin dashboard to update reservation status
+CREATE POLICY "Allow public update reservations"
     ON public.reservations
     FOR UPDATE
-    TO authenticated
+    TO public
     USING (true)
     WITH CHECK (true);
 
--- Policy 4: Allow authenticated admins to delete reservations
-CREATE POLICY "Allow admin delete reservations"
+-- Policy 4: Allow admin dashboard to delete reservations
+CREATE POLICY "Allow public delete reservations"
     ON public.reservations
     FOR DELETE
-    TO authenticated
+    TO public
     USING (true);
 
 -- =======================================================
