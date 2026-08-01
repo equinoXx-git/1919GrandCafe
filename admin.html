@@ -15,7 +15,8 @@
   <link rel="icon" type="image/png" href="assets/images/logo-white.png">
   <link rel="apple-touch-icon" href="assets/images/logo-white.png">
 <style>
-    :root {
+    /* Dark Theme (Default) */
+    :root, [data-theme="dark"] {
       --color-gold: #c9a14a;
       --color-gold-dark: #9e7a2b;
       --color-gold-light: #e6cb85;
@@ -30,6 +31,24 @@
       --status-cancelled: #f56c6c;
       --font-serif: 'Cormorant Garamond', Georgia, serif;
       --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+      --th-bg: #161512;
+      --auth-bg: rgba(10, 10, 10, 0.95);
+      --auth-input-bg: #121212;
+      --search-bg: #121212;
+    }
+
+    /* Light Theme */
+    [data-theme="light"] {
+      --bg-dark: #f4f1eb;
+      --bg-card: #ffffff;
+      --bg-card-hover: #f9f7f2;
+      --border-color: rgba(160, 140, 100, 0.25);
+      --text-main: #2c2a25;
+      --text-muted: #6b6556;
+      --th-bg: #f0ece0;
+      --auth-bg: rgba(244, 241, 235, 0.97);
+      --auth-input-bg: #f4f1eb;
+      --search-bg: #f4f1eb;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -47,7 +66,7 @@
     .auth-overlay {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(10, 10, 10, 0.95);
+      background: var(--auth-bg);
       backdrop-filter: blur(8px);
       z-index: 9999;
       display: flex;
@@ -74,10 +93,10 @@
     .auth-input {
       width: 100%;
       padding: 0.85rem 1rem;
-      background: #121212;
+      background: var(--auth-input-bg);
       border: 1px solid var(--border-color);
       border-radius: 6px;
-      color: #fff;
+      color: var(--text-main);
       font-size: 1rem;
       margin-bottom: 1.2rem;
       text-align: center;
@@ -263,10 +282,10 @@
 
     .search-input {
       padding: 0.6rem 1rem;
-      background: #121212;
+      background: var(--search-bg);
       border: 1px solid var(--border-color);
       border-radius: 6px;
-      color: #fff;
+      color: var(--text-main);
       font-size: 0.9rem;
       width: 260px;
     }
@@ -275,7 +294,7 @@
 
     .date-select {
       padding: 0.6rem 0.8rem;
-      background: #121212;
+      background: var(--search-bg);
       border: 1px solid var(--border-color);
       border-radius: 6px;
       color: var(--text-main);
@@ -325,7 +344,7 @@
     }
 
     .reservations-table th {
-      background: #161512;
+      background: var(--th-bg);
       color: var(--color-gold);
       font-size: 0.78rem;
       text-transform: uppercase;
@@ -438,26 +457,26 @@
 
     .admin-toast.show { transform: translateY(0); opacity: 1; }
 
-    /* Print View — Professional Hostess Sheet */
+    /* Print View — Professional Hostess Sheet (works in both Portrait & Landscape) */
     @media print {
-      @page {
-        size: landscape;
-        margin: 0.6in 0.5in;
-      }
+      @page { margin: 0.5in 0.4in; }
 
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 
       body {
         background: #fff !important;
         color: #1a1a1a !important;
-        font-size: 9pt;
+        font-size: 8pt;
         font-family: 'Plus Jakarta Sans', 'Segoe UI', Arial, sans-serif;
       }
 
-      /* Hide all interactive UI */
+      /* Hide all interactive/screen-only UI */
       .admin-navbar, .metrics-grid, .controls-panel,
       .action-btns, .auth-overlay, .modal-backdrop,
       .admin-toast, .live-status-pill, .nav-actions { display: none !important; }
+
+      /* Hide Special Requests & Actions columns to fit portrait */
+      .print-hide { display: none !important; }
 
       /* Show branded print header */
       .print-header { display: flex !important; }
@@ -465,50 +484,49 @@
       .admin-container { max-width: 100%; width: 100%; margin: 0; padding: 0; }
 
       .table-responsive {
-        border: 2px solid #1a1a1a;
+        border: 1.5pt solid #1a1a1a;
         border-radius: 0;
         overflow: visible;
       }
 
-      .reservations-table { font-size: 8.5pt; }
+      .reservations-table { font-size: 7.5pt; width: 100%; table-layout: fixed; }
 
       .reservations-table th {
         background: #1a1a1a !important;
         color: #fff !important;
-        font-size: 7.5pt;
-        padding: 0.5rem 0.6rem;
-        letter-spacing: 0.08em;
-        border-bottom: 2px solid #1a1a1a;
+        font-size: 6.5pt;
+        padding: 4pt 5pt;
+        letter-spacing: 0.06em;
+        border-bottom: 1.5pt solid #1a1a1a;
+        word-wrap: break-word;
       }
 
       .reservations-table td {
-        padding: 0.45rem 0.6rem;
-        border-bottom: 1px solid #d0d0d0;
+        padding: 4pt 5pt;
+        border-bottom: 0.5pt solid #d0d0d0;
         color: #1a1a1a;
-        font-size: 8.5pt;
-        line-height: 1.4;
+        font-size: 7.5pt;
+        line-height: 1.3;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
       }
 
       .reservations-table tr:nth-child(even) td {
-        background: #f5f5f2 !important;
+        background: #f7f6f3 !important;
       }
 
       .reservations-table tr:hover { background: transparent; }
 
-      /* Hide Actions column (last col) */
-      .reservations-table th:last-child,
-      .reservations-table td:last-child { display: none; }
-
       /* Status badges for print */
       .status-badge {
-        font-size: 7pt;
-        padding: 2px 6px;
-        border-radius: 3px;
+        font-size: 6.5pt;
+        padding: 1pt 4pt;
+        border-radius: 2pt;
         font-weight: 700;
       }
-      .status-badge.pending   { background: #fff3cd !important; color: #856404 !important; border: 1px solid #856404; }
-      .status-badge.confirmed { background: #d4edda !important; color: #155724 !important; border: 1px solid #155724; }
-      .status-badge.cancelled { background: #f8d7da !important; color: #721c24 !important; border: 1px solid #721c24; }
+      .status-badge.pending   { background: #fff3cd !important; color: #856404 !important; border: 0.5pt solid #856404; }
+      .status-badge.confirmed { background: #d4edda !important; color: #155724 !important; border: 0.5pt solid #155724; }
+      .status-badge.cancelled { background: #f8d7da !important; color: #721c24 !important; border: 0.5pt solid #721c24; }
 
       /* Links as plain text */
       a { color: #1a1a1a !important; text-decoration: none !important; }
@@ -544,7 +562,7 @@
   <!-- Security Passkey Modal -->
   <div class="auth-overlay" id="authOverlay">
     <div class="auth-card">
-      <img src="assets/images/logo-white.png" alt="1919 Grand Cafe Logo">
+      <img id="authLogo" src="assets/images/logo-white.png" alt="1919 Grand Cafe Logo">
       <h2>Admin Portal</h2>
       <p>Enter passkey to manage 1919 Grand Cafe reservations.</p>
       <input type="password" id="adminPasskey" class="auth-input" placeholder="••••••••" onkeyup="if(event.key==='Enter') checkAdminAuth()">
@@ -555,7 +573,7 @@
   <!-- Admin Header Bar -->
   <header class="admin-navbar">
     <a href="#" class="admin-brand">
-      <img src="assets/images/logo-white.png" alt="1919 Logo">
+      <img id="navLogo" src="assets/images/logo-white.png" alt="1919 Logo">
       <div>
         <h1>1919 GRAND CAFE</h1>
         <div style="font-size: 0.72rem; color: var(--text-muted); letter-spacing: 0.1em;">BINONDO, MANILA · RESERVATIONS CONTROL</div>
@@ -568,11 +586,12 @@
     </div>
 
     <div class="nav-actions">
-      <button class="btn-icon" id="soundToggleBtn" onclick="toggleSound()" title="Toggle Sound Alert"><i class="fa-solid fa-volume-high"></i> Sound ON</button>
-      <button class="btn-icon" onclick="exportToCSV()" title="Export Reservations CSV"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
-      <button class="btn-icon" onclick="printSheet()" title="Print Hostess Sheet"><i class="fa-solid fa-print"></i> Print Sheet</button>
+      <button class="btn-icon" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Light / Dark Mode"><i class="fa-solid fa-sun"></i> Light</button>
+      <button class="btn-icon" id="soundToggleBtn" onclick="toggleSound()" title="New booking chime alert"><i class="fa-solid fa-volume-high"></i> Sound</button>
+      <button class="btn-icon" onclick="exportToCSV()" title="Export Reservations CSV"><i class="fa-solid fa-file-csv"></i> CSV</button>
+      <button class="btn-icon" onclick="printSheet()" title="Print Hostess Sheet"><i class="fa-solid fa-print"></i> Print</button>
       <button class="btn-icon" onclick="fetchReservations(true)"><i class="fa-solid fa-rotate"></i> Refresh</button>
-      <a href="index.html" class="btn-icon" target="_blank"><i class="fa-solid fa-globe"></i> Website</a>
+      <a href="index.html" class="btn-icon" target="_blank"><i class="fa-solid fa-globe"></i> Site</a>
       <button class="btn-icon" onclick="logoutAdmin()"><i class="fa-solid fa-right-from-bracket"></i> Lock</button>
     </div>
   </header>
@@ -642,9 +661,9 @@
             <th>Date & Time</th>
             <th>Guests</th>
             <th>Seating</th>
-            <th>Special Requests</th>
+            <th class="print-hide">Special Requests</th>
             <th>Status</th>
-            <th>Actions</th>
+            <th class="print-hide">Actions</th>
           </tr>
         </thead>
         <tbody id="reservationsTbody">
@@ -875,9 +894,9 @@
             </td>
             <td><strong>${r.guests || 1}</strong></td>
             <td>${eArea}</td>
-            <td style="max-width:200px; font-size:0.85rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${eNotes}</td>
+            <td class="print-hide" style="max-width:200px; font-size:0.85rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${eNotes}</td>
             <td><span class="status-badge ${status}">${status}</span></td>
-            <td>
+            <td class="print-hide">
               <div class="action-btns">
                 ${status !== 'confirmed' ? `<button class="btn-act btn-approve" onclick="updateStatus('${r.id}', 'confirmed', event)" title="Confirm Booking"><i class="fa-solid fa-check"></i></button>` : ''}
                 ${status !== 'cancelled' ? `<button class="btn-act btn-cancel" onclick="updateStatus('${r.id}', 'cancelled', event)" title="Cancel Booking"><i class="fa-solid fa-xmark"></i></button>` : ''}
@@ -921,16 +940,51 @@
       document.getElementById('detailModal').classList.remove('active');
     }
 
+    // ─── Theme Toggle (Dark / Light) ───
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('1919_admin_theme', next);
+
+      const btn = document.getElementById('themeToggleBtn');
+      const navLogo = document.getElementById('navLogo');
+      const authLogo = document.getElementById('authLogo');
+
+      if (next === 'light') {
+        btn.innerHTML = `<i class="fa-solid fa-moon"></i> Dark`;
+        if (navLogo) navLogo.src = 'assets/images/logo.png';
+        if (authLogo) authLogo.src = 'assets/images/logo.png';
+      } else {
+        btn.innerHTML = `<i class="fa-solid fa-sun"></i> Light`;
+        if (navLogo) navLogo.src = 'assets/images/logo-white.png';
+        if (authLogo) authLogo.src = 'assets/images/logo-white.png';
+      }
+    }
+
+    // Restore saved theme on load
+    (function() {
+      const saved = localStorage.getItem('1919_admin_theme');
+      if (saved === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+        const btn = document.getElementById('themeToggleBtn');
+        if (btn) btn.innerHTML = `<i class="fa-solid fa-moon"></i> Dark`;
+        const navLogo = document.getElementById('navLogo');
+        const authLogo = document.getElementById('authLogo');
+        if (navLogo) navLogo.src = 'assets/images/logo.png';
+        if (authLogo) authLogo.src = 'assets/images/logo.png';
+      }
+    })();
+
     // ─── Sound Alert (Synthetic Web Audio API Chime) ───
     function toggleSound() {
       soundEnabled = !soundEnabled;
       const btn = document.getElementById('soundToggleBtn');
       if (soundEnabled) {
-        btn.classList.add('active');
-        btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Sound ON`;
+        btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Sound`;
       } else {
-        btn.classList.remove('active');
-        btn.innerHTML = `<i class="fa-solid fa-volume-xmark"></i> Sound OFF`;
+        btn.innerHTML = `<i class="fa-solid fa-volume-xmark"></i> Muted`;
       }
     }
 
