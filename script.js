@@ -742,10 +742,10 @@ function setDefaultReservationDate() {
 /* Phase 4 — Customer Autoresponder Integration (EmailJS + Web3Forms) */
 const WEB3FORMS_KEY = 'e00bc05e-5abc-4f72-b58a-a4aeb5cb4de0';
 
-// Configure EmailJS keys here or set on window object for free customer emails (200/month)
-window.EMAILJS_SERVICE_ID  = window.EMAILJS_SERVICE_ID  || '';
-window.EMAILJS_TEMPLATE_ID = window.EMAILJS_TEMPLATE_ID || '';
-window.EMAILJS_PUBLIC_KEY  = window.EMAILJS_PUBLIC_KEY  || '';
+// Active EmailJS Credentials for Customer Autoresponder
+window.EMAILJS_SERVICE_ID  = window.EMAILJS_SERVICE_ID  || 'service_8qop5j3';
+window.EMAILJS_TEMPLATE_ID = window.EMAILJS_TEMPLATE_ID || 'template_rgqb1mr';
+window.EMAILJS_PUBLIC_KEY  = window.EMAILJS_PUBLIC_KEY  || 'txHsr4wqRpTGE5c3Q';
 
 async function sendReservationEmail(reservation) {
   // 1. Notification to Café Owner (Web3Forms)
