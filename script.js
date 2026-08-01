@@ -742,7 +742,7 @@ function setDefaultReservationDate() {
 /* Phase 4 — Dual Email Notifications (Owner Alert via Web3Forms + Customer Autoresponder via EmailJS) */
 const WEB3FORMS_KEY       = 'e00bc05e-5abc-4f72-b58a-a4aeb5cb4de0';
 const EMAILJS_SERVICE_ID  = 'service_8qop5j3';
-const EMAILJS_TEMPLATE_ID = 'template_rgqb1mr';
+const EMAILJS_TEMPLATE_ID = 'template_1soc9g9';
 const EMAILJS_PUBLIC_KEY  = 'txHsr4wqRpTGE5c3Q';
 
 async function sendReservationEmail(reservation) {
