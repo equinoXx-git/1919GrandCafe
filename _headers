@@ -1,0 +1,14 @@
+# Cloudflare Pages — Caching Headers
+# HTML: always revalidate for fresh content
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Static assets: aggressive long-term cache (1 year)
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.css
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.js
+  Cache-Control: public, max-age=31536000, immutable

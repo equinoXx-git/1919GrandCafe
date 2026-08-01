@@ -17,14 +17,16 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
   
   <!-- Favicon / Tab Icon -->
   <link rel="icon" type="image/png" href="assets/images/logo.png">
   <link rel="apple-touch-icon" href="assets/images/logo.png">
   
-  <!-- Stylesheet -->
+  <!-- Stylesheet & Script -->
   <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
 </head>
 <body>
 
@@ -711,10 +713,7 @@
     </div>
   </div>
 
-  <!-- Real Audio Element (Pointed to assets/audio/ambiance.mp3) -->
-  <audio id="bgMusic" src="assets/audio/ambiance.mp3" loop preload="auto"></audio>
-
-  <!-- JavaScript -->
-  <script src="script.js"></script>
+  <!-- Audio (loaded on-demand when user clicks play) -->
+  <audio id="bgMusic" src="assets/audio/ambiance.mp3" loop preload="none"></audio>
 </body>
 </html>

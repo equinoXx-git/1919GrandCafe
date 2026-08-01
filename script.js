@@ -108,17 +108,21 @@ function updateLogos() {
   }
 }
 
-/* Header Scroll Effect */
+/* Header Scroll Effect (rAF-throttled for performance) */
 function initHeaderScroll() {
   const header = document.querySelector('.site-header');
+  if (!header) return;
+  let ticking = false;
   window.addEventListener('scroll', () => {
-    if (window.scrollY > 50) {
-      header.classList.add('scrolled');
-    } else {
-      header.classList.remove('scrolled');
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        header.classList.toggle('scrolled', window.scrollY > 50);
+        updateLogos();
+        ticking = false;
+      });
+      ticking = true;
     }
-    updateLogos();
-  });
+  }, { passive: true });
 }
 
 /* Mobile Navigation Toggle */
@@ -519,80 +523,200 @@ window.scrollToReservation = function() {
   if (section) section.scrollIntoView({ behavior: 'smooth' });
 };
 
-/* Table Reservation Logic */
+/* Table Reservation Logic — Phase 2: Validation + UX + Supabase Hook */
 function initReservationForm() {
   const form = document.getElementById('reservationForm');
   if (!form) return;
 
-  form.addEventListener('submit', (e) => {
+  const fields = {
+    name:   document.getElementById('resName'),
+    phone:  document.getElementById('resPhone'),
+    date:   document.getElementById('resDate'),
+    time:   document.getElementById('resTime'),
+    guests: document.getElementById('resGuests'),
+    area:   document.getElementById('resArea'),
+    notes:  document.getElementById('resNotes')
+  };
+  const submitBtn = document.getElementById('reserveSubmitBtn');
+
+  // Clear field errors on input
+  Object.values(fields).forEach(el => {
+    if (!el) return;
+    el.addEventListener('input',  () => clearFieldError(el));
+    el.addEventListener('change', () => clearFieldError(el));
+  });
+
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (submitBtn.classList.contains('btn-loading')) return; // double-submit guard
 
-    const name = document.getElementById('resName').value;
-    const phone = document.getElementById('resPhone').value;
-    const date = document.getElementById('resDate').value;
-    const time = document.getElementById('resTime').value;
-    const guests = document.getElementById('resGuests').value;
-    const area = document.getElementById('resArea').value;
+    /* -------- Validation -------- */
+    let valid = true;
+    const setErr = (el, msg) => { setFieldError(el, msg); valid = false; };
 
-    const refCode = '1919-' + Math.floor(100000 + Math.random() * 900000);
+    // Full Name
+    if (!fields.name.value.trim() || fields.name.value.trim().length < 2)
+      setErr(fields.name, 'Please enter your full name (at least 2 characters).');
+    else clearFieldError(fields.name);
 
-    const backdrop = document.getElementById('modalBackdrop');
-    const modalBody = document.getElementById('modalBody');
+    // PH Phone (+639xxxxxxxxx, 09xxxxxxxxx, or with spaces/dashes)
+    const phoneCleaned = fields.phone.value.replace(/[\s\-()]/g, '');
+    const phRegex = /^(?:\+?63|0)9\d{9}$/;
+    if (!fields.phone.value.trim())
+      setErr(fields.phone, 'Phone number is required.');
+    else if (!phRegex.test(phoneCleaned))
+      setErr(fields.phone, 'Invalid PH format. Example: +63 917 123 4567 or 09171234567');
+    else clearFieldError(fields.phone);
 
-    modalBody.innerHTML = `
-      <div style="text-align: center; padding: 1rem 0;">
-        <div style="width: 70px; height: 70px; border-radius: 50%; background: var(--color-gold); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1.5rem; box-shadow: var(--shadow-gold);">
-          <i class="fa-solid fa-check"></i>
-        </div>
-        <span class="subheading-gold">RESERVATION CONFIRMED</span>
-        <h3 style="font-size: 2rem; margin-bottom: 0.5rem;">We Look Forward to Welcoming You</h3>
-        <p style="color: var(--color-text-muted); margin-bottom: 2rem; max-width: 480px; margin-left: auto; margin-right: auto;">
-          Dear <strong>${name}</strong>, your table reservation at 1919 Grand Cafe Binondo has been successfully logged.
-        </p>
+    // Date (must not be past)
+    const todayMidnight = new Date(); todayMidnight.setHours(0,0,0,0);
+    const picked = fields.date.value ? new Date(fields.date.value + 'T00:00:00') : null;
+    if (!fields.date.value)
+      setErr(fields.date, 'Please select a reservation date.');
+    else if (picked < todayMidnight)
+      setErr(fields.date, 'Date cannot be in the past.');
+    else clearFieldError(fields.date);
 
-        <div style="background: var(--color-cream); border: 1px solid var(--color-gold); border-radius: var(--radius-md); padding: 1.5rem; max-width: 450px; margin: 0 auto 2rem; text-align: left;">
-          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 0.5rem; margin-bottom: 0.8rem;">
-            <span style="font-size: 0.85rem; text-transform: uppercase; color: var(--color-text-muted);">Ref Code:</span>
-            <strong style="color: var(--color-gold-dark); letter-spacing: 0.1em;">${refCode}</strong>
+    // Time
+    if (!fields.time.value)
+      setErr(fields.time, 'Please select a time.');
+    else clearFieldError(fields.time);
+
+    // Guests
+    if (!fields.guests.value)
+      setErr(fields.guests, 'Please select the number of guests.');
+    else clearFieldError(fields.guests);
+
+    // Seating
+    if (!fields.area.value)
+      setErr(fields.area, 'Please select a seating preference.');
+    else clearFieldError(fields.area);
+
+    if (!valid) {
+      const first = form.querySelector('.is-invalid');
+      if (first) first.focus();
+      return;
+    }
+
+    /* -------- Loading state -------- */
+    const origHTML = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.classList.add('btn-loading');
+    submitBtn.innerHTML = '<span class="btn-spinner"></span> Confirming…';
+
+    try {
+      let guestsNum = parseInt(fields.guests.value, 10);
+      if (isNaN(guestsNum)) guestsNum = 2;
+
+      const data = {
+        full_name:          fields.name.value.trim(),
+        phone:              fields.phone.value.trim(),
+        reservation_date:   fields.date.value,
+        reservation_time:   fields.time.value,
+        guests:             guestsNum,
+        seating_preference: fields.area.value,
+        special_requests:   fields.notes ? fields.notes.value.trim() : '',
+        status:             'pending'
+      };
+
+      // Phase 3 hook — Supabase insert (no-op until supabaseClient.js is loaded)
+      if (typeof window.submitReservationToSupabase === 'function') {
+        await window.submitReservationToSupabase(data);
+      } else {
+        await new Promise(r => setTimeout(r, 700)); // simulate latency
+      }
+
+      /* -------- Success modal -------- */
+      const refCode  = '1919-' + Math.floor(100000 + Math.random() * 900000);
+      const backdrop = document.getElementById('modalBackdrop');
+      const modalBody = document.getElementById('modalBody');
+
+      if (modalBody && backdrop) {
+        const eName  = escapeHtml(fields.name.value.trim());
+        const ePhone = escapeHtml(fields.phone.value.trim());
+
+        modalBody.innerHTML = `
+          <div style="text-align: center; padding: 1rem 0;">
+            <div style="width: 70px; height: 70px; border-radius: 50%; background: var(--color-gold); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1.5rem; box-shadow: var(--shadow-gold);">
+              <i class="fa-solid fa-check"></i>
+            </div>
+            <span class="subheading-gold">RESERVATION CONFIRMED</span>
+            <h3 style="font-size: 2rem; margin-bottom: 0.5rem;">We Look Forward to Welcoming You</h3>
+            <p style="color: var(--color-text-muted); margin-bottom: 2rem; max-width: 480px; margin-left: auto; margin-right: auto;">
+              Dear <strong>${eName}</strong>, your table reservation at 1919 Grand Cafe Binondo has been successfully logged.
+            </p>
+
+            <div style="background: var(--color-cream); border: 1px solid var(--color-gold); border-radius: var(--radius-md); padding: 1.5rem; max-width: 450px; margin: 0 auto 2rem; text-align: left;">
+              <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 0.5rem; margin-bottom: 0.8rem;">
+                <span style="font-size: 0.85rem; text-transform: uppercase; color: var(--color-text-muted);">Ref Code:</span>
+                <strong style="color: var(--color-gold-dark); letter-spacing: 0.1em;">${refCode}</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+                <span>Date &amp; Time:</span>
+                <strong>${fields.date.value} @ ${fields.time.value}</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+                <span>Party Size:</span>
+                <strong>${fields.guests.value} Guest(s)</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span>Seating Preference:</span>
+                <strong>${fields.area.value}</strong>
+              </div>
+            </div>
+
+            <p style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 1.5rem;">
+              A confirmation will be sent to <strong>${ePhone}</strong>.<br>
+              Location: 117 Juan Luna St., Binondo, Manila.
+            </p>
+
+            <button class="btn btn-dark" onclick="closeModal()">Close &amp; Return</button>
           </div>
-          <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
-            <span>Date & Time:</span>
-            <strong>${date} @ ${time}</strong>
-          </div>
-          <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
-            <span>Party Size:</span>
-            <strong>${guests} Guest(s)</strong>
-          </div>
-          <div style="display: flex; justify-content: space-between;">
-            <span>Seating Preference:</span>
-            <strong>${area}</strong>
-          </div>
-        </div>
+        `;
+        backdrop.classList.add('active');
+      }
 
-        <p style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 1.5rem;">
-          A confirmation SMS has been dispatched to <strong>${phone}</strong>. Location: 117 Juan Luna St., Binondo, Manila.
-        </p>
+      form.reset();
+      setDefaultReservationDate();
 
-        <button class="btn btn-dark" onclick="closeModal()">Close & Return</button>
-      </div>
-    `;
-
-    backdrop.classList.add('active');
-    form.reset();
-    setDefaultReservationDate();
+    } catch (err) {
+      console.error('Reservation error:', err);
+      showToast('⚠️ Could not complete reservation. Please try again.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.classList.remove('btn-loading');
+      submitBtn.innerHTML = origHTML;
+    }
   });
 }
 
+/* Field-error helpers */
+function setFieldError(el, msg) {
+  if (!el) return;
+  el.classList.add('is-invalid');
+  let fb = el.parentElement.querySelector('.invalid-feedback');
+  if (!fb) { fb = document.createElement('span'); fb.className = 'invalid-feedback'; el.parentElement.appendChild(fb); }
+  fb.textContent = msg;
+}
+function clearFieldError(el) {
+  if (!el) return;
+  el.classList.remove('is-invalid');
+  const fb = el.parentElement.querySelector('.invalid-feedback');
+  if (fb) fb.remove();
+}
+function escapeHtml(s) {
+  const map = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'};
+  return s.replace(/[&<>"']/g, c => map[c]);
+}
+
 function setDefaultReservationDate() {
-  const dateInput = document.getElementById('resDate');
-  if (dateInput) {
-    const today = new Date();
-    today.setDate(today.getDate() + 1); // Default to tomorrow
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    dateInput.value = `${yyyy}-${mm}-${dd}`;
-  }
+  const d = document.getElementById('resDate');
+  if (!d) return;
+  const now = new Date();
+  const fmt = dt => `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+  d.setAttribute('min', fmt(now));              // block past dates in date-picker
+  const tmr = new Date(now); tmr.setDate(tmr.getDate()+1);
+  d.value = fmt(tmr);                            // default to tomorrow
 }
 
 /* Gallery Lightbox */

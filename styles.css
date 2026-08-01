@@ -1277,6 +1277,41 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 0 0 3px rgba(201, 161, 74, 0.2);
 }
 
+/* Form Validation & Loading States */
+.form-control.is-invalid {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.12);
+}
+
+.invalid-feedback {
+  display: block;
+  font-size: 0.78rem;
+  color: #dc3545;
+  margin-top: 0.3rem;
+  font-weight: 500;
+}
+
+.btn-loading {
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.btn-spinner {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin-btn 0.65s linear infinite;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+@keyframes spin-btn {
+  to { transform: rotate(360deg); }
+}
+
 /* ==========================================================================
    INSTAGRAM GALLERY GRID
    ========================================================================== */
