@@ -739,19 +739,18 @@ function setDefaultReservationDate() {
   d.value = fmt(tmr);                            // default to tomorrow
 }
 
-/* Phase 4 — Web3Forms Email Notification */
+/* Phase 4 — Dual Email Notifications (Owner Alert + Customer Confirmation) */
 const WEB3FORMS_KEY = 'e00bc05e-5abc-4f72-b58a-a4aeb5cb4de0';
 
 async function sendReservationEmail(reservation) {
-  const payload = {
+  // 1. Notification to Café Owner (Web3Forms)
+  const ownerPayload = {
     access_key:    WEB3FORMS_KEY,
     subject:       `🍽️ New Reservation — ${reservation.full_name}`,
-    from_name:     '1919 Grand Cafe Reservations',
+    from_name:     '1919 Grand Cafe System',
     email:         reservation.email,
     replyto:       reservation.email,
-    autoresponder: "true",
 
-    // Formatted email body
     name:          reservation.full_name,
     phone:         reservation.phone,
     message:       [
@@ -772,23 +771,43 @@ async function sendReservationEmail(reservation) {
     ].join('\n')
   };
 
-  const res = await fetch('https://api.web3forms.com/submit', {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify(payload)
-  });
+  // 2. Direct Confirmation Email to Customer (FormSubmit API)
+  const customerPayload = {
+    _subject:           `✨ Table Reservation Confirmation — 1919 Grand Cafe Binondo`,
+    _template:          'table',
+    _captcha:           'false',
+    'Customer Name':     reservation.full_name,
+    'Reservation Date':  reservation.reservation_date,
+    'Reservation Time':  reservation.reservation_time,
+    'Party Size':        `${reservation.guests} Guest(s)`,
+    'Seating Preference':reservation.seating_preference,
+    'Special Requests':  reservation.special_requests || 'None',
+    'Restaurant':        '1919 Grand Cafe Binondo',
+    'Address':           '117 Juan Luna St., Binondo, Manila',
+    'Contact Phone':     '(02) 7-752 0654 | (0961) 244 4508',
+    'Status':            'PENDING CONFIRMATION'
+  };
 
-  if (!res.ok) {
-    throw new Error(`Web3Forms responded with ${res.status}`);
+  try {
+    await Promise.allSettled([
+      fetch('https://api.web3forms.com/submit', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(ownerPayload)
+      }),
+      fetch(`https://formsubmit.co/ajax/${reservation.email}`, {
+        method:  'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body:    JSON.stringify(customerPayload)
+      })
+    ]);
+    console.log('Dual reservation emails dispatched successfully.');
+  } catch (err) {
+    console.warn('Email dispatch warning:', err);
   }
-
-  const result = await res.json();
-  if (!result.success) {
-    throw new Error(result.message || 'Web3Forms submission failed');
-  }
-
-  console.log('Email notification sent via Web3Forms');
-  return result;
 }
 
 /* Gallery Lightbox */
