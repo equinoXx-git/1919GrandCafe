@@ -629,13 +629,14 @@ function initReservationForm() {
         status:             'pending'
       };
 
-      // Phase 3 — Supabase insert (decoupled so DB errors won't block email or UI confirmation)
+      // Phase 3 — Supabase insert
       try {
         if (typeof window.submitReservationToSupabase === 'function') {
           await window.submitReservationToSupabase(data);
         }
       } catch (dbErr) {
         console.error('Supabase storage alert:', dbErr);
+        showToast('⚠️ Supabase Error: RLS policy blocking insert. See console or SQL Editor.');
       }
 
       // Phase 4 — Web3Forms email notification (sends to owner & customer auto-reply)
