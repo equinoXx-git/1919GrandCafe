@@ -619,12 +619,17 @@ function initReservationForm() {
         status:             'pending'
       };
 
-      // Phase 3 hook — Supabase insert (no-op until supabaseClient.js is loaded)
+      // Phase 3 — Supabase insert
       if (typeof window.submitReservationToSupabase === 'function') {
         await window.submitReservationToSupabase(data);
       } else {
         await new Promise(r => setTimeout(r, 700)); // simulate latency
       }
+
+      // Phase 4 — Web3Forms email notification (fire-and-forget)
+      sendReservationEmail(data).catch(err =>
+        console.warn('Email notification failed (non-blocking):', err)
+      );
 
       /* -------- Success modal -------- */
       const refCode  = '1919-' + Math.floor(100000 + Math.random() * 900000);
@@ -717,6 +722,54 @@ function setDefaultReservationDate() {
   d.setAttribute('min', fmt(now));              // block past dates in date-picker
   const tmr = new Date(now); tmr.setDate(tmr.getDate()+1);
   d.value = fmt(tmr);                            // default to tomorrow
+}
+
+/* Phase 4 — Web3Forms Email Notification */
+const WEB3FORMS_KEY = 'e00bc05e-5abc-4f72-b58a-a4aeb5cb4de0';
+
+async function sendReservationEmail(reservation) {
+  const payload = {
+    access_key: WEB3FORMS_KEY,
+    subject:    `🍽️ New Reservation — ${reservation.full_name}`,
+    from_name:  '1919 Grand Cafe Reservations',
+
+    // Formatted email body
+    name:       reservation.full_name,
+    phone:      reservation.phone,
+    message:    [
+      `📋  NEW TABLE RESERVATION`,
+      `━━━━━━━━━━━━━━━━━━━━━━━━`,
+      `👤  Name:     ${reservation.full_name}`,
+      `📞  Phone:    ${reservation.phone}`,
+      `📅  Date:     ${reservation.reservation_date}`,
+      `🕐  Time:     ${reservation.reservation_time}`,
+      `👥  Guests:   ${reservation.guests}`,
+      `🪑  Seating:  ${reservation.seating_preference}`,
+      `📝  Requests: ${reservation.special_requests || '—'}`,
+      ``,
+      `Status: PENDING`,
+      `━━━━━━━━━━━━━━━━━━━━━━━━`,
+      `1919 Grand Cafe · 117 Juan Luna St., Binondo, Manila`
+    ].join('\n')
+  };
+
+  const res = await fetch('https://api.web3forms.com/submit', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify(payload)
+  });
+
+  if (!res.ok) {
+    throw new Error(`Web3Forms responded with ${res.status}`);
+  }
+
+  const result = await res.json();
+  if (!result.success) {
+    throw new Error(result.message || 'Web3Forms submission failed');
+  }
+
+  console.log('Email notification sent via Web3Forms');
+  return result;
 }
 
 /* Gallery Lightbox */
