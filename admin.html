@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — 1919 Grand Cafe Binondo</title>
+  
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="assets/images/logo.png">
+
+  <style>
+    :root {
+      --color-gold: #c9a14a;
+      --color-gold-dark: #9e7a2b;
+      --color-gold-light: #e6cb85;
+      --bg-dark: #121212;
+      --bg-card: #1c1b18;
+      --bg-card-hover: #262420;
+      --border-color: rgba(201, 161, 74, 0.25);
+      --text-main: #f0ece0;
+      --text-muted: #a09a8c;
+      --status-pending: #e6a23c;
+      --status-confirmed: #67c23a;
+      --status-cancelled: #f56c6c;
+      --font-serif: 'Cormorant Garamond', Georgia, serif;
+      --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Auth Overlay */
+    .auth-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(10, 10, 10, 0.95);
+      backdrop-filter: blur(8px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.4s ease;
+    }
+
+    .auth-card {
+      background: var(--bg-card);
+      border: 1px solid var(--color-gold);
+      border-radius: 12px;
+      padding: 2.5rem;
+      width: 90%;
+      max-width: 420px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    }
+
+    .auth-card img {
+      width: 70px;
+      margin-bottom: 1rem;
+    }
+
+    .auth-card h2 {
+      font-family: var(--font-serif);
+      font-size: 1.8rem;
+      color: var(--color-gold);
+      margin-bottom: 0.5rem;
+    }
+
+    .auth-card p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .auth-input {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      background: #121212;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 1rem;
+      margin-bottom: 1.2rem;
+      text-align: center;
+      letter-spacing: 0.1em;
+    }
+
+    .auth-input:focus {
+      outline: none;
+      border-color: var(--color-gold);
+    }
+
+    .btn-gold {
+      width: 100%;
+      padding: 0.85rem;
+      background: var(--color-gold);
+      color: #121212;
+      border: none;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-gold:hover {
+      background: var(--color-gold-light);
+      transform: translateY(-1px);
+    }
+
+    /* Admin Navbar */
+    .admin-navbar {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .admin-brand {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      text-decoration: none;
+      color: var(--text-main);
+    }
+
+    .admin-brand img { width: 40px; }
+    .admin-brand h1 {
+      font-family: var(--font-serif);
+      font-size: 1.4rem;
+      color: var(--color-gold);
+      letter-spacing: 0.05em;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .btn-icon {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+    }
+
+    .btn-icon:hover {
+      border-color: var(--color-gold);
+      color: var(--color-gold);
+    }
+
+    /* Dashboard Main Container */
+    .admin-container {
+      max-width: 1350px;
+      width: 95%;
+      margin: 2rem auto;
+      flex-grow: 1;
+    }
+
+    /* Metrics Grid */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.2rem;
+      margin-bottom: 2rem;
+    }
+
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .metric-info h4 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .metric-info .number {
+      font-size: 2rem;
+      font-weight: 700;
+      font-family: var(--font-serif);
+      color: var(--color-gold);
+    }
+
+    .metric-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: rgba(201, 161, 74, 0.1);
+      color: var(--color-gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+    }
+
+    /* Filter & Controls Panel */
+    .controls-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px 10px 0 0;
+      padding: 1.2rem 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .search-input {
+      padding: 0.6rem 1rem;
+      background: #121212;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 0.9rem;
+      width: 280px;
+    }
+
+    .search-input:focus { outline: none; border-color: var(--color-gold); }
+
+    .filter-tabs {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .filter-btn {
+      padding: 0.5rem 1rem;
+      background: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .filter-btn.active, .filter-btn:hover {
+      background: var(--color-gold);
+      color: #121212;
+      border-color: var(--color-gold);
+    }
+
+    /* Table Styling */
+    .table-responsive {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-top: none;
+      border-radius: 0 0 10px 10px;
+      overflow-x: auto;
+    }
+
+    .reservations-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    .reservations-table th {
+      background: #161512;
+      color: var(--color-gold);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 1rem 1.2rem;
+      border-bottom: 1px solid var(--border-color);
+      white-space: nowrap;
+    }
+
+    .reservations-table td {
+      padding: 1rem 1.2rem;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      vertical-align: middle;
+    }
+
+    .reservations-table tr:hover {
+      background: var(--bg-card-hover);
+    }
+
+    .status-badge {
+      padding: 0.25rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: inline-block;
+    }
+
+    .status-badge.pending { background: rgba(230, 162, 60, 0.15); color: var(--status-pending); border: 1px solid var(--status-pending); }
+    .status-badge.confirmed { background: rgba(103, 194, 58, 0.15); color: var(--status-confirmed); border: 1px solid var(--status-confirmed); }
+    .status-badge.cancelled { background: rgba(245, 108, 108, 0.15); color: var(--status-cancelled); border: 1px solid var(--status-cancelled); }
+
+    .action-btns {
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    .btn-act {
+      padding: 0.4rem 0.65rem;
+      border: none;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn-approve { background: var(--status-confirmed); color: #fff; }
+    .btn-cancel { background: var(--status-pending); color: #fff; }
+    .btn-delete { background: var(--status-cancelled); color: #fff; }
+    .btn-act:hover { opacity: 0.85; }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-muted);
+    }
+
+    /* Toast Alert */
+    .admin-toast {
+      position: fixed;
+      bottom: 2rem; right: 2rem;
+      background: var(--color-gold);
+      color: #121212;
+      padding: 0.85rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 700;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 10000;
+    }
+
+    .admin-toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Authentication Shield Overlay -->
+  <div class="auth-overlay" id="authOverlay">
+    <div class="auth-card">
+      <img src="assets/images/logo.png" alt="1919 Grand Cafe Logo">
+      <h2>Admin Portal</h2>
+      <p>Enter the security passkey to access the 1919 Grand Cafe reservation dashboard.</p>
+      <input type="password" id="adminPasskey" class="auth-input" placeholder="••••••••" onkeyup="if(event.key==='Enter') checkAdminAuth()">
+      <button class="btn-gold" onclick="checkAdminAuth()">Access Dashboard</button>
+    </div>
+  </div>
+
+  <!-- Admin Navbar -->
+  <header class="admin-navbar">
+    <a href="#" class="admin-brand">
+      <img src="assets/images/logo.png" alt="1919 Logo">
+      <h1>1919 GRAND CAFE — ADMIN</h1>
+    </a>
+    <div class="nav-actions">
+      <button class="btn-icon" onclick="fetchReservations()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      <a href="index.html" class="btn-icon" target="_blank"><i class="fa-solid fa-globe"></i> View Website</a>
+      <button class="btn-icon" onclick="logoutAdmin()"><i class="fa-solid fa-right-from-bracket"></i> Lock</button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="admin-container">
+    
+    <!-- Stat Metrics -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-info">
+          <h4>Total Reservations</h4>
+          <div class="number" id="metricTotal">0</div>
+        </div>
+        <div class="metric-icon"><i class="fa-solid fa-list-check"></i></div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-info">
+          <h4>Pending Review</h4>
+          <div class="number" id="metricPending" style="color: var(--status-pending);">0</div>
+        </div>
+        <div class="metric-icon" style="color: var(--status-pending); background: rgba(230,162,60,0.1);"><i class="fa-solid fa-clock-rotate-left"></i></div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-info">
+          <h4>Confirmed Bookings</h4>
+          <div class="number" id="metricConfirmed" style="color: var(--status-confirmed);">0</div>
+        </div>
+        <div class="metric-icon" style="color: var(--status-confirmed); background: rgba(103,194,58,0.1);"><i class="fa-solid fa-circle-check"></i></div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-info">
+          <h4>Total Guests</h4>
+          <div class="number" id="metricGuests">0</div>
+        </div>
+        <div class="metric-icon"><i class="fa-solid fa-users"></i></div>
+      </div>
+    </div>
+
+    <!-- Controls Panel -->
+    <div class="controls-panel">
+      <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search name, phone, email..." oninput="filterReservations()">
+      
+      <div class="filter-tabs">
+        <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
+        <button class="filter-btn" onclick="setFilter('pending', this)">Pending</button>
+        <button class="filter-btn" onclick="setFilter('confirmed', this)">Confirmed</button>
+        <button class="filter-btn" onclick="setFilter('cancelled', this)">Cancelled</button>
+      </div>
+    </div>
+
+    <!-- Reservations Table -->
+    <div class="table-responsive">
+      <table class="reservations-table">
+        <thead>
+          <tr>
+            <th>Guest Name</th>
+            <th>Contact Info</th>
+            <th>Date & Time</th>
+            <th>Guests</th>
+            <th>Seating</th>
+            <th>Special Requests</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="reservationsTbody">
+          <tr>
+            <td colspan="8" class="empty-state">
+              <i class="fa-solid fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 0.5rem;"></i><br>
+              Loading reservations from Supabase...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- Toast Alert -->
+  <div class="admin-toast" id="adminToast"></div>
+
+  <!-- Supabase REST API & Admin Logic -->
+  <script>
+    const SUPABASE_URL = 'https://sxhkjyxruumschlqoywd.supabase.co';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4aGtqeXhydXVtc2NobHFveXdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1NTM2MjUsImV4cCI6MjEwMTEyOTYyNX0.WCv7a9SVKDG8XsSEEz3Wj1Ciran0afgJhKcvlgIXuAE';
+    const ADMIN_PASSCODE = 'admin1919';
+
+    let allReservations = [];
+    let currentFilter = 'all';
+
+    // ─── Authentication ───
+    function checkAdminAuth() {
+      const pass = document.getElementById('adminPasskey').value;
+      if (pass === ADMIN_PASSCODE) {
+        sessionStorage.setItem('1919_admin_authenticated', 'true');
+        document.getElementById('authOverlay').style.opacity = '0';
+        setTimeout(() => {
+          document.getElementById('authOverlay').style.display = 'none';
+        }, 400);
+        fetchReservations();
+      } else {
+        alert('Invalid Passkey. Please try again.');
+      }
+    }
+
+    function logoutAdmin() {
+      sessionStorage.removeItem('1919_admin_authenticated');
+      location.reload();
+    }
+
+    // Auto-login if authenticated in current session
+    document.addEventListener('DOMContentLoaded', () => {
+      if (sessionStorage.getItem('1919_admin_authenticated') === 'true') {
+        document.getElementById('authOverlay').style.display = 'none';
+        fetchReservations();
+      }
+    });
+
+    // ─── Supabase API Queries ───
+    async function fetchReservations() {
+      const tbody = document.getElementById('reservationsTbody');
+      tbody.innerHTML = `<tr><td colspan="8" class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i> Loading reservations...</td></tr>`;
+
+      try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/reservations?select=*&order=created_at.desc`, {
+          headers: {
+            'apikey': SUPABASE_ANON,
+            'Authorization': `Bearer ${SUPABASE_ANON}`
+          }
+        });
+
+        if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+
+        allReservations = await response.json();
+        updateMetrics();
+        renderTable();
+        showAdminToast('Dashboard synced with Supabase');
+
+      } catch (err) {
+        console.error('Fetch error:', err);
+        tbody.innerHTML = `<tr><td colspan="8" class="empty-state" style="color: var(--status-cancelled);">⚠️ Failed to load reservations. Check Supabase connection or RLS settings.</td></tr>`;
+      }
+    }
+
+    async function updateStatus(id, newStatus) {
+      try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/reservations?id=eq.${id}`, {
+          method: 'PATCH',
+          headers: {
+            'apikey': SUPABASE_ANON,
+            'Authorization': `Bearer ${SUPABASE_ANON}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+          },
+          body: JSON.stringify({ status: newStatus })
+        });
+
+        if (!response.ok) throw new Error('Failed to update status');
+
+        showAdminToast(`Reservation marked as ${newStatus.toUpperCase()}`);
+        fetchReservations();
+
+      } catch (err) {
+        alert('Error updating status: ' + err.message);
+      }
+    }
+
+    async function deleteReservation(id, name) {
+      if (!confirm(`Are you sure you want to delete the reservation for ${name}?`)) return;
+
+      try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/reservations?id=eq.${id}`, {
+          method: 'DELETE',
+          headers: {
+            'apikey': SUPABASE_ANON,
+            'Authorization': `Bearer ${SUPABASE_ANON}`
+          }
+        });
+
+        if (!response.ok) throw new Error('Failed to delete reservation');
+
+        showAdminToast(`Reservation for ${name} deleted`);
+        fetchReservations();
+
+      } catch (err) {
+        alert('Error deleting reservation: ' + err.message);
+      }
+    }
+
+    // ─── Rendering & Filtering ───
+    function updateMetrics() {
+      document.getElementById('metricTotal').textContent = allReservations.length;
+      document.getElementById('metricPending').textContent = allReservations.filter(r => r.status === 'pending').length;
+      document.getElementById('metricConfirmed').textContent = allReservations.filter(r => r.status === 'confirmed').length;
+      
+      const totalGuests = allReservations.reduce((sum, r) => sum + (parseInt(r.guests, 10) || 0), 0);
+      document.getElementById('metricGuests').textContent = totalGuests;
+    }
+
+    function setFilter(filter, btn) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderTable();
+    }
+
+    function filterReservations() {
+      renderTable();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('reservationsTbody');
+      const search = document.getElementById('searchInput').value.toLowerCase();
+
+      const filtered = allReservations.filter(r => {
+        const matchesFilter = (currentFilter === 'all') || (r.status === currentFilter);
+        const matchesSearch = !search || 
+          (r.full_name && r.full_name.toLowerCase().includes(search)) ||
+          (r.phone && r.phone.toLowerCase().includes(search)) ||
+          (r.email && r.email.toLowerCase().includes(search));
+        return matchesFilter && matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="empty-state">No reservations found matching your criteria.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(r => {
+        const eName = escapeHtml(r.full_name || 'Guest');
+        const eEmail = escapeHtml(r.email || 'N/A');
+        const ePhone = escapeHtml(r.phone || 'N/A');
+        const eDate = escapeHtml(r.reservation_date || '');
+        const eTime = escapeHtml(r.reservation_time || '');
+        const eArea = escapeHtml(r.seating_preference || 'Main Hall');
+        const eNotes = escapeHtml(r.special_requests || '—');
+        const status = r.status || 'pending';
+
+        return `
+          <tr>
+            <td><strong>${eName}</strong></td>
+            <td>
+              <div><i class="fa-solid fa-envelope" style="font-size:0.75rem; color:var(--color-gold);"></i> ${eEmail}</div>
+              <div style="color:var(--text-muted); font-size:0.82rem;"><i class="fa-solid fa-phone" style="font-size:0.75rem;"></i> ${ePhone}</div>
+            </td>
+            <td>
+              <div><strong>${eDate}</strong></div>
+              <div style="color:var(--color-gold); font-size:0.82rem;">${eTime}</div>
+            </td>
+            <td><strong>${r.guests || 1}</strong></td>
+            <td>${eArea}</td>
+            <td style="max-width:200px; font-size:0.85rem; color:var(--text-muted);">${eNotes}</td>
+            <td><span class="status-badge ${status}">${status}</span></td>
+            <td>
+              <div class="action-btns">
+                ${status !== 'confirmed' ? `<button class="btn-act btn-approve" onclick="updateStatus('${r.id}', 'confirmed')" title="Confirm Booking"><i class="fa-solid fa-check"></i></button>` : ''}
+                ${status !== 'cancelled' ? `<button class="btn-act btn-cancel" onclick="updateStatus('${r.id}', 'cancelled')" title="Cancel Booking"><i class="fa-solid fa-xmark"></i></button>` : ''}
+                <button class="btn-act btn-delete" onclick="deleteReservation('${r.id}', '${eName}')" title="Delete Record"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function escapeHtml(s) {
+      const map = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'};
+      return String(s).replace(/[&<>"']/g, c => map[c]);
+    }
+
+    function showAdminToast(msg) {
+      const toast = document.getElementById('adminToast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+  </script>
+</body>
+</html>
